@@ -1,10 +1,10 @@
+import numpy as np
+
 from abc import abstractmethod, ABC
 
 def Node(ABC):
     """
-    This is a stub but might be useful for implementing equations
-    This is an abstract class for a node of an equation tree
-
+    Abstract class for a node of an equation tree
     """
     def __init__(self, num_children):
         # num_children should be either 0,1,2 
@@ -18,4 +18,26 @@ def Node(ABC):
 
     @abstractmethod
     def compute(self):
+        """
+        So this kinda lends itself to recursive construction of functions but not sure how that will affect speed.
+        Maybe it wont actually matter too much? Will need to do some profiling.
+        Either way we will just implement it in whatever way makes sense at first and optimise later.
+        """
         pass
+
+
+# Just got a couple of examples here. Not sure if this is the best way to do things so I am open to other
+# suggestions on how to structure this. 
+class Add(Node):
+    def __init__(self, num_children: int):
+        super().__init__(num_children)
+
+    def compute(self):
+        return self.compute(self.children[0]) + self.compute(self.children[1])
+    
+class Sin(Node):
+    def __init__(self, num_children: int):
+        super().__init__(num_children)
+
+    def compute(self):
+        return np.sin(self.compute(self.children[0]))

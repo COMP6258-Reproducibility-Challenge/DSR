@@ -3,17 +3,18 @@ import numpy as np
 
 from gymnasium import spaces
 
-from EquationTree import EquationTree
-from Library import Library
+from ExprTree import ExprTree
+from NodeLibrary import Library
 from Dataset import Dataset
 
 """
-Defines environment for symbolic regression.
+Defines environment for symbolic regression. This is the main entry-point to the whole "environment" package, and the 
+main thing our reinforcement learning implementation will interface with.
 """
 
 class SymbolicRegressionEnv(gym.Env):
     def __init__(self, library: Library, dataset: Dataset, hidden_shape=64) -> None:
-        self.equation_tree = EquationTree()
+        self.expr_tree = ExprTree(library)
         self.dataset = dataset
         self.library = library
         # At each step the model outputs a node (integer) and the next hidden state (vector)
@@ -27,14 +28,15 @@ class SymbolicRegressionEnv(gym.Env):
     
     def _get_obs(self):
         """
-        Returns the current state of the environment
+        Returns the current state of the environment (should be an element of the observation space). This includes the 
+        parent and sibling of the current node, and the hidden state produced by the RNN in the previous step
         """
         pass
 
     def _get_info(self):
         """
         Returns auxillary information dictionary about the environment/last step produced
-          (i.e. current tree size maybe? idk we'll see)
+        (i.e. current tree size maybe? idk we'll see)
         """
         pass
 
@@ -54,6 +56,8 @@ class SymbolicRegressionEnv(gym.Env):
         """
         Resets the environment (gets called at the end of every episode)
         """
+        # Reset relevant properties here
+        #
 
         observation = self._get_obs()
         info = self._get_info()
@@ -67,7 +71,7 @@ class SymbolicRegressionEnv(gym.Env):
         """
         # Compute new environment after action has been applied here
         #
-        #
+        
         terminated = self._is_terminated()
         reward = self._calculate_reward() if terminated else 0
         observation = self._get_obs()

@@ -1,20 +1,20 @@
 import numpy as np
 
-from Equation import Equation
+from Expr import Expr
 
 class Dataset():
-    def __init__(self, equation: Equation, numpoints=100):
+    def __init__(self, expr: Expr, numpoints=100):
         # Or np.uniform? Whatever the paper says
         self.X = np.linspace(-1,1,numpoints)
-        self.y = equation(self.X)
+        self.y = expr(self.X)
     
-    def error(self, test_equation: Equation):
+    def reward(self, expr: Expr):
         """
         Params:
-            test_equation: Equation
-                The equation to test the error of 
+            expr: Expr
+                The expression to test
         
         Returns:
-            float which is the squashed nrmse of the proposed equation on the dataset
+            float which is the squashed nrmse (reward) of the proposed expression on the dataset
         """
         return 0
