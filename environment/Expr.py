@@ -1,36 +1,40 @@
-import numpy as np
+from Expr import Expr
+from NodeLibrary import Library
 
-class Expr():
-    """
-    Represents an actual finished Expr from which stuff can be calculated
-    """
+class ExprTree():
+
+    def __init__(self, library: Library, node_list=[]):
+        """
+        Params
+            library: Library
+                Library of available nodes
+            node_list: list[Node]
+                In-order listing of nodes in the expression tree (normally starts off empty)
+        """
+        self.node_list = node_list
+        self.library = library
+        pass
+
+    def build_equation(self) -> Expr:
+        """
+        Constructs callable equation from the ExprTree
+        """
+        return Expr(self.node_list)
+
+    def add_node(self, node_index: int):
+        """
+        Adds node to the tree.
+
+        Params
+            node_index: int
+                The index of the node in the library
+        """
+        self.node_list.append(self.library.get_node(node_index)) 
     
-    def __init__(self, expr_tree):
+    def valid_nodes_mask(self):
         """
-        Takes in an expression tree and generates a callable function with a numpy array as input and output. The function
-        and string representation generation should happen in __init__. The __call__ and __repr__ methods shouldnt need to
-        be changed (unless we change the whole way this is done) as they depend only on expr_func and expr_repr being filled in.
-
-        Params
-            expr_tree: list[Node]
-                A fully filled out expression tree in the form of a list of nodes for an in-order traversal of the tree.
+        Returns a mask (list of boolean values) of the same shape as the library where a True reflects that 
+        the corresponding node is valid and could be added next, and a False reflects that that node is an invalid
+        addition. This will be needed to zero out the output probabilities of invalid nodes.
         """
-        self.expr_func = lambda x: x
-        self.expr_repr = "x"
-
-    def __call__(self, X: np.ndarray):
-        """
-        Params
-            X: np.ndarray
-                An n-dimensional numpy vector 
-        
-        Returns
-            The output of the expression as a numpy array.
-        """
-        return self.expr_func(X)
-
-    def __repr__(self):
-        """
-        Returns string representation of expression
-        """
-        return self.expr_repr
+        pass
