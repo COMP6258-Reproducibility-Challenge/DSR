@@ -1,7 +1,7 @@
 from Expr import Expr
 from NodeLibrary import Library
 
-class ExprTree():
+class Expr():
 
     def __init__(self, library: Library, node_list=[]):
         """

@@ -1,6 +1,6 @@
 import numpy as np
 
-class Expr():
+class ExprTree():
     """
     Represents an actual finished Expr from which stuff can be calculated
     """
