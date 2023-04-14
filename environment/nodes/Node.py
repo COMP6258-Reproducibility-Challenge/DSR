@@ -102,6 +102,9 @@ class X(Node):
         super().__init__(num_children)
         self.value = value
 
+    def set_value(self, value: torch.Tensor):
+        self.value = value
+
     def compute(self):
         return self.value
 
@@ -109,6 +112,9 @@ class X(Node):
 class Y(Node):
     def __init__(self, num_children: int = 0, value: torch.Tensor = torch.zeros(1)):
         super().__init__(num_children)
+        self.value = value
+
+    def set_value(self, value: torch.Tensor):
         self.value = value
 
     def compute(self):
