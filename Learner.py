@@ -63,14 +63,25 @@ class Learner():
         rewards = torch.empty((self.batch_size,))
         probs = torch.empty((self.batch_size,))
         entropies = torch.empty((self.batch_size,))
+        exprs = []
+
         for i in range(self.batch_size):
-            # generate expression
-            # for each token generated  
-            #   running_entropy += entropy
-            #   log_prob += log(p)
-            # get reward
-            pass
-        # return rewards, entropies, probs, exprs
+            running_entropy = 0
+            running_log_prob = 0
+            observation, info = self.env.reset()
+            done = False
+            while not done:
+                action, hidden, log_prob, entropy = self.model.sample(observation)
+                running_entropy += entropy
+                running_log_prob += log_prob
+                action_dict = {"node": action, "hidden": hidden}
+                observation, reward, done, _, info = self.env.step(action_dict, )
+
+            rewards[i] = reward
+            probs[i] = running_log_prob
+            entropies[i] = running_entropy
+            exprs.append(self.env.expr_tree)
+        return rewards, entropies, probs, exprs
     
     def generate_best_expr(self, node_index_list):
         # Return an Expr of the best generated
