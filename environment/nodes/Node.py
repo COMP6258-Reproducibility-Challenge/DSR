@@ -3,7 +3,7 @@ import torch
 from abc import abstractmethod, ABC
 
 
-def Node(ABC):
+class Node(ABC):
     """
     Abstract class for a node of an equation tree
     """
@@ -15,7 +15,7 @@ def Node(ABC):
         self.children = [None for _ in range(num_children)]
 
     # Need some logic here
-    def add_child(self, child: Node):
+    def add_child(self, child):
         if self.children[0] == None:
             self.children[0] = child
         else:  # Assuming valid input where no additional children is added over max
@@ -38,7 +38,7 @@ class Add(Node):
         super().__init__(num_children)
 
     def compute(self):
-        return self.compute(self.children[0]) + self.compute(self.children[1])
+        return self.children[0].compute() + self.children[1].compute()
 
 
 class Sub(Node):
@@ -46,7 +46,15 @@ class Sub(Node):
         super().__init__(num_children)
 
     def compute(self):
-        return self.compute(self.children[0]) - self.compute(self.children[1])
+        return self.children[0].compute() - self.children[1].compute()
+
+
+class Mult(Node):
+    def __init__(self, num_children: int = 2):
+        super().__init__(num_children)
+
+    def compute(self):
+        return self.children[0].compute() / self.children[1].compute()
 
 
 class Div(Node):
@@ -54,7 +62,7 @@ class Div(Node):
         super().__init__(num_children)
 
     def compute(self):
-        return self.compute(self.children[0]) / self.compute(self.children[1])
+        return self.children[0].compute() / self.children[1].compute()
 
 
 class Sin(Node):
@@ -62,7 +70,7 @@ class Sin(Node):
         super().__init__(num_children)
 
     def compute(self):
-        return np.sin(self.compute(self.children[0]))
+        return torch.sin(self.children[0].compute())
 
 
 class Cos(Node):
@@ -70,7 +78,7 @@ class Cos(Node):
         super().__init__(num_children)
 
     def compute(self):
-        return np.cos(self.compute(self.children[0]))
+        return torch.cos(self.children[0].compute())
 
 
 class Log(Node):
@@ -78,7 +86,7 @@ class Log(Node):
         super().__init__(num_children)
 
     def compute(self):
-        return np.log(self.compute(self.children[0]))
+        return torch.log(self.children[0].compute())
 
 
 class Exp(Node):
@@ -86,12 +94,15 @@ class Exp(Node):
         super().__init__(num_children)
 
     def compute(self):
-        return np.exp(self.compute(self.children[0]))
+        return torch.exp(self.children[0].compute())
 
 
 class X(Node):
     def __init__(self, num_children: int = 0, value: torch.Tensor = torch.zeros(1)):
         super().__init__(num_children)
+        self.value = value
+
+    def set_value(self, value: torch.Tensor):
         self.value = value
 
     def compute(self):
@@ -101,6 +112,9 @@ class X(Node):
 class Y(Node):
     def __init__(self, num_children: int = 0, value: torch.Tensor = torch.zeros(1)):
         super().__init__(num_children)
+        self.value = value
+
+    def set_value(self, value: torch.Tensor):
         self.value = value
 
     def compute(self):
@@ -114,3 +128,17 @@ class Const(Node):
 
     def compute(self):
         return self.value
+
+
+# def BasicTest():
+#     y = Add(2)
+#     a = X(value=torch.rand(2, 2, requires_grad=True, dtype=torch.float))
+#     b = Y(value=torch.rand(2, 2, requires_grad=True, dtype=torch.float))
+#     c = Sin()
+#     c.add_child(b)
+#     y.add_child(a)
+#     y.add_child(c)
+#     print(y.compute())
+
+
+# BasicTest()
