@@ -7,8 +7,7 @@ class Learner():
     """
     Runs the main body of the algortithm, including model learning and generating the best expressions
     """
-    def __init__(self, env: SREnv, model, library: NodeLibrary, dataset: Dataset, risk_factor=0.05, entropy_coef=0.005, 
-                 epochs=2000, batch_size=1000, lr=0.0005):
+    def __init__(self, env: SREnv, model, risk_factor=0.05, entropy_coef=0.005, epochs=2000, batch_size=1000, lr=0.0005):
         self.env = env
         self.model = model
         self.optim = optim.Adam(model.parameters(), lr=lr)
