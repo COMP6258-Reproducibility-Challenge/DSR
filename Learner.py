@@ -11,8 +11,6 @@ class Learner():
                  epochs=2000, batch_size=1000, lr=0.0005):
         self.env = env
         self.model = model
-        self.library = library
-        self.dataset = dataset
         self.optim = optim.Adam(model.parameters(), lr=lr)
 
         self.risk_factor = risk_factor
@@ -46,7 +44,7 @@ class Learner():
         max_reward_i = torch.argmax(rewards)    
 
         # The loss term is negative here because pytorch optimisers by default perform gradient descent, but
-        # we want to do gradient ascent
+        # we want to do gradient ascent on g1+g2
         return {"log_prob_term": g1, "entropy_term": g2, "loss": -(g1 + g2),
                 "max_reward": max_reward, "max_reward_i": max_reward_i}
 
