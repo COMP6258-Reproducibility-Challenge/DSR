@@ -46,6 +46,6 @@ class ExprTree():
             if type(node).__name__ == "Y":
                 node.set_value(y)
         return self.root.compute()
+            
 
-    def build_tree(node_list):
-        pass
+                    

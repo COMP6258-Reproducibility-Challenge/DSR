@@ -11,6 +11,7 @@ class Expr():
             node_list: list[Node]
                 In-order listing of nodes in the expression tree (normally starts off empty)
         """
+        self.stack = []
         self.node_list = node_list
         self.library = library
         pass
@@ -29,7 +30,15 @@ class Expr():
             node_index: int
                 The index of the node in the library
         """
-        self.node_list.append(self.library.get_node(node_index)) 
+        last_node = self.node_list[-1]
+        if last_node.remaining_children() == 2:
+            last_node.add_child(self.library.get_node(node_index))
+            self.stack.append(last_node)
+        elif last_node.remaining_children() == 1:
+            last_node.add_child(self.library.get_node(node_index))
+        else:
+            self.stack.pop().add_child(self.library.get_node(node_index))
+     
     
     def valid_nodes_mask(self):
         """
