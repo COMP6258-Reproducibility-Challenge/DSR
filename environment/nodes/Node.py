@@ -12,14 +12,15 @@ class Node(ABC):
         # num_children should be either 0,1,2
         self.num_children = num_children
         # children are just a list of nodes (which may be empty if num_children == 0)
-        self.children = [None for _ in range(num_children)]
+        self.children = []
 
     # Need some logic here
     def add_child(self, child):
-        if self.children[0] == None:
-            self.children[0] = child
-        else:  # Assuming valid input where no additional children is added over max
-            self.children[1] = child
+        if self.remaining_children() > 0:
+            self.children.append(child)
+
+    def remaining_children(self):
+        return self.num_children-len(self.children)
 
     @abstractmethod
     def compute(self):
