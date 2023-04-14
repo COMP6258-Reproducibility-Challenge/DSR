@@ -1,14 +1,19 @@
 import torch
+from torch import optim
+
 from environment import SREnv, NodeLibrary, Dataset, Expr
 
 class Learner():
-
+    """
+    Runs the main body of the algortithm, including model learning and generating the best expressions
+    """
     def __init__(self, env: SREnv, model, library: NodeLibrary, dataset: Dataset, risk_factor=0.05, entropy_coef=0.005, 
-                 epochs=10, batch_size=1000):
+                 epochs=2000, batch_size=1000, lr=0.0005):
         self.env = env
         self.model = model
         self.library = library
         self.dataset = dataset
+        self.optim = optim.Adam(model.parameters(), lr=lr)
 
         self.risk_factor = risk_factor
         self.entropy_coef = entropy_coef
@@ -24,13 +29,10 @@ class Learner():
                 Entropy of generated categorical distributions for each expression. Shape (N,)
             rewards: torch.Tensor
                 Rewards of each generated expression. Shape (N,)
-            risk_factor: float
-                The proportion of expressions that are kept 
-            entropy_coefficient: float
-                The coefficient for the entropy loss term
         Returns
             A dictionary holding different loss terms and other auxilliary info
         """
+        # Filter the low performing rewards, keeping only the top quantile of expressions
         r_eps = torch.quantile(rewards, 1-self.risk_factor, interpolation='linear')
         keep = rewards > r_eps
         rewards_keep = rewards[keep]
@@ -41,25 +43,18 @@ class Learner():
         g2 = self.entropy_coef * entropies_keep.mean()
 
         max_reward = torch.max(rewards)
-        max_reward_i = torch.argmax(rewards)
+        max_reward_i = torch.argmax(rewards)    
 
-        return {"log_prob_term": g1, "entropy_term": g2, "loss": g1 + g2,
+        # The loss term is negative here because pytorch optimisers by default perform gradient descent, but
+        # we want to do gradient ascent
+        return {"log_prob_term": g1, "entropy_term": g2, "loss": -(g1 + g2),
                 "max_reward": max_reward, "max_reward_i": max_reward_i}
-    
-    def update(self):
-        log_probs, entropies, rewards, exprs = self.get_batch()
-        loss_dict = self.loss(log_probs, entropies, rewards)
-        # calculate loss over batch and back_prop
-        # generate best expression so far
-        pass
-    
-    def train(self):
-        # for each epoch
-        #   call update
-        #   get best performing expr per generation
-        pass
 
     def get_batch(self):
+        """
+        Generates a batch of expressions, as well as their associated rewards, entropies, and log probabilities.
+        All these terms can then be used in the loss function.
+        """
         rewards = torch.empty((self.batch_size,))
         probs = torch.empty((self.batch_size,))
         entropies = torch.empty((self.batch_size,))
@@ -75,17 +70,56 @@ class Learner():
                 running_entropy += entropy
                 running_log_prob += log_prob
                 action_dict = {"node": action, "hidden": hidden}
-                observation, reward, done, _, info = self.env.step(action_dict, )
+                observation, reward, done, _, info = self.env.step(action_dict)
 
+            # This will be equal to the last reward generated, as an expression only gets rewarded once it is completed.
             rewards[i] = reward
             probs[i] = running_log_prob
             entropies[i] = running_entropy
             exprs.append(self.env.expr_tree)
+
         return rewards, entropies, probs, exprs
     
-    def generate_best_expr(self, node_index_list):
-        # Return an Expr of the best generated
-        pass
-        
+    def update(self):
+        """
+        Generates a single batch and performs gradient ascent on the loss term.
 
+        Returns:
+            The best expression of the batch, and the generated loss dictionary of the batch
+        """
+        self.optim.zero_grad()
+        log_probs, entropies, rewards, exprs = self.get_batch()
+        loss_dict = self.loss(log_probs, entropies, rewards)
+        loss = loss_dict["loss"]
+        loss.backward()
+        self.optim.step()
+
+        best_expr = exprs["max_reward_i"].build_equation()
+        return best_expr, loss_dict
+    
+    def train(self):
+        """
+        The main training loop. This will keep track of the rewards and losses, as well as the maximum reward 
+        generated and its associated expression. These are all then returned for graphing/analysis.
+        """
+        max_reward = 0
+        best_expr = None
+        rewards = []
+        losses = []
+        for epoch in range(self.epochs):
+            expr, loss_dict = self.update()
+            reward = loss_dict["max_reward"]
+            loss = loss_dict["loss"]
+            rewards.append(reward)
+            losses.append(loss)
+            if reward > max_reward:
+                max_reward = reward
+                best_expr = expr
+            
+            if (epoch+1) % 10 == 0:
+                # I am hoping having best_expr inside the f-string automatically calls __repr__, not sure though lmao. 
+                # Easy to fix if not.
+                print(f"Epoch: {epoch}/{self.epochs} - Expr: {best_expr} - Reward: {reward} - Loss: {loss}")
+        
+        return losses, rewards, best_expr, max_reward
     
