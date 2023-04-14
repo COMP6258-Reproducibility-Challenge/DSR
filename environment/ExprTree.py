@@ -19,8 +19,8 @@ class ExprTree():
         """
 
         self.node_list = node_list
-        self.root = None
-        self.expr_repr = "x"
+        self.root = node_list[0]
+        self.expr_repr = self.root.stringify()
 
     def __call__(self, X: np.ndarray):
         """
@@ -46,6 +46,3 @@ class ExprTree():
             if type(node).__name__ == "Y":
                 node.set_value(y)
         return self.root.compute()
-            
-
-                    

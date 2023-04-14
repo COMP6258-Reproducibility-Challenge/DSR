@@ -31,6 +31,15 @@ class Node(ABC):
         """
         pass
 
+    @abstractmethod
+    def stringify(self):
+        """
+        So this kinda lends itself to recursive construction of functions but not sure how that will affect speed.
+        Maybe it wont actually matter too much? Will need to do some profiling.
+        Either way we will just implement it in whatever way makes sense at first and optimise later.
+        """
+        pass
+
 
 # Just got a couple of examples here. Not sure if this is the best way to do things so I am open to other
 # suggestions on how to structure this.
@@ -41,6 +50,9 @@ class Add(Node):
     def compute(self):
         return self.children[0].compute() + self.children[1].compute()
 
+    def stringify(self):
+        return self.children[0].stringify() + " + " + self.children[1].stringify()
+
 
 class Sub(Node):
     def __init__(self, num_children: int = 2):
@@ -48,6 +60,9 @@ class Sub(Node):
 
     def compute(self):
         return self.children[0].compute() - self.children[1].compute()
+
+    def stringify(self):
+        return self.children[0].stringify() + " - " + self.children[1].stringify()
 
 
 class Mult(Node):
@@ -57,6 +72,9 @@ class Mult(Node):
     def compute(self):
         return self.children[0].compute() / self.children[1].compute()
 
+    def stringify(self):
+        return self.children[0].stringify() + " * " + self.children[1].stringify()
+
 
 class Div(Node):
     def __init__(self, num_children: int = 2):
@@ -64,6 +82,9 @@ class Div(Node):
 
     def compute(self):
         return self.children[0].compute() / self.children[1].compute()
+
+    def stringify(self):
+        return self.children[0].stringify() + " / " + self.children[1].stringify()
 
 
 class Sin(Node):
@@ -73,6 +94,9 @@ class Sin(Node):
     def compute(self):
         return torch.sin(self.children[0].compute())
 
+    def stringify(self):
+        return "sin(" + self.children[0].stringify() + ")"
+
 
 class Cos(Node):
     def __init__(self, num_children: int = 1):
@@ -80,6 +104,9 @@ class Cos(Node):
 
     def compute(self):
         return torch.cos(self.children[0].compute())
+
+    def stringify(self):
+        return "cos(" + self.children[0].stringify() + ")"
 
 
 class Log(Node):
@@ -89,6 +116,9 @@ class Log(Node):
     def compute(self):
         return torch.log(self.children[0].compute())
 
+    def stringify(self):
+        return "log(" + self.children[0].stringify() + ")"
+
 
 class Exp(Node):
     def __init__(self, num_children: int = 1):
@@ -96,6 +126,9 @@ class Exp(Node):
 
     def compute(self):
         return torch.exp(self.children[0].compute())
+
+    def stringify(self):
+        return "exp(" + self.children[0].stringify() + ")"
 
 
 class X(Node):
@@ -109,6 +142,9 @@ class X(Node):
     def compute(self):
         return self.value
 
+    def stringify(self):
+        return "x"
+
 
 class Y(Node):
     def __init__(self, num_children: int = 0, value: torch.Tensor = torch.zeros(1)):
@@ -121,6 +157,9 @@ class Y(Node):
     def compute(self):
         return self.value
 
+    def stringify(self):
+        return "y"
+
 
 class Const(Node):
     def __init__(self, num_children: int = 0, value: float = 0):
@@ -129,6 +168,9 @@ class Const(Node):
 
     def compute(self):
         return self.value
+
+    def stringify(self):
+        return str(self.value)
 
 
 # def BasicTest():
@@ -139,7 +181,7 @@ class Const(Node):
 #     c.add_child(b)
 #     y.add_child(a)
 #     y.add_child(c)
-#     print(y.compute())
+#     print(y.stringify())
 
 
 # BasicTest()
