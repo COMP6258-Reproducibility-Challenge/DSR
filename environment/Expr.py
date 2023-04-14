@@ -31,10 +31,11 @@ class Expr():
             node_index: int
                 The index of the node in the library
         """
-        if len(self.node_list) > 0:
-            self.stack.pop().add_child(x)
-
         node_to_add = self.library.get_node(node_index)
+
+        if len(self.node_list) > 0:
+            self.stack.pop().add_child(node_to_add)
+
         self.node_list.append(node_to_add)
         last_node = self.node_list[-1]
         if last_node.remaining_children() == 2:
