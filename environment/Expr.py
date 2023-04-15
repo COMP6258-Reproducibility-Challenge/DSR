@@ -35,7 +35,7 @@ class Expr():
         self.node_list.append(node_to_add)
 
         #add the current node as a child of a node on the stack
-        if len(self.node_list) > 0:
+        if len(self.node_list) > 1:
             self.stack.pop().add_child(node_to_add)
 
         #add the current node to the stack for every child space it has
