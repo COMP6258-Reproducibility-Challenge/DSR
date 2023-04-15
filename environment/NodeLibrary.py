@@ -15,4 +15,4 @@ class Library():
         return len(self.nodes)
     
     def get_node(self, node_index: int):
-        return self.nodes[node_index]
+        return self.nodes[node_index].duplicate()

@@ -3,7 +3,7 @@ import numpy as np
 
 from gymnasium import spaces
 
-from ExprTree import ExprTree
+from Expr import Expr
 from NodeLibrary import Library
 from Dataset import Dataset
 
@@ -14,7 +14,7 @@ main thing our reinforcement learning implementation will interface with.
 
 class SymbolicRegressionEnv(gym.Env):
     def __init__(self, library: Library, dataset: Dataset, hidden_shape=64) -> None:
-        self.expr_tree = ExprTree(library)
+        self.expr = Expr(library)
         self.dataset = dataset
         self.library = library
         # At each step the model outputs a node (integer) and the next hidden state (vector)

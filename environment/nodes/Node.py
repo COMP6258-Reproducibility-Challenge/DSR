@@ -40,6 +40,14 @@ class Node(ABC):
         """
         pass
 
+    @abstractmethod
+    def duplicate(self):
+        """
+        Creates a new instance of it's class
+        """
+        pass
+
+
 
 # Just got a couple of examples here. Not sure if this is the best way to do things so I am open to other
 # suggestions on how to structure this.
@@ -53,6 +61,9 @@ class Add(Node):
     def stringify(self):
         return self.children[0].stringify() + " + " + self.children[1].stringify()
 
+    def duplicate(self):
+        return Add()
+
 
 class Sub(Node):
     def __init__(self, num_children: int = 2):
@@ -63,6 +74,9 @@ class Sub(Node):
 
     def stringify(self):
         return self.children[0].stringify() + " - " + self.children[1].stringify()
+
+    def duplicate(self):
+        return Sub()
 
 
 class Mult(Node):
@@ -75,6 +89,8 @@ class Mult(Node):
     def stringify(self):
         return self.children[0].stringify() + " * " + self.children[1].stringify()
 
+    def duplicate(self):
+        return Mult()
 
 class Div(Node):
     def __init__(self, num_children: int = 2):
@@ -86,6 +102,8 @@ class Div(Node):
     def stringify(self):
         return self.children[0].stringify() + " / " + self.children[1].stringify()
 
+    def duplicate(self):
+        return Div()
 
 class Sin(Node):
     def __init__(self, num_children: int = 1):
@@ -96,6 +114,9 @@ class Sin(Node):
 
     def stringify(self):
         return "sin(" + self.children[0].stringify() + ")"
+
+    def duplicate(self):
+        return Sin()
 
 
 class Cos(Node):
@@ -108,6 +129,8 @@ class Cos(Node):
     def stringify(self):
         return "cos(" + self.children[0].stringify() + ")"
 
+    def duplicate(self):
+        return Cos()
 
 class Log(Node):
     def __init__(self, num_children: int = 1):
@@ -119,6 +142,8 @@ class Log(Node):
     def stringify(self):
         return "log(" + self.children[0].stringify() + ")"
 
+    def duplicate(self):
+        return Log()
 
 class Exp(Node):
     def __init__(self, num_children: int = 1):
@@ -130,6 +155,8 @@ class Exp(Node):
     def stringify(self):
         return "exp(" + self.children[0].stringify() + ")"
 
+    def duplicate(self):
+        return Exp()
 
 class X(Node):
     def __init__(self, num_children: int = 0, value: torch.Tensor = torch.zeros(1)):
@@ -145,6 +172,8 @@ class X(Node):
     def stringify(self):
         return "x"
 
+    def duplicate(self):
+        return X(self.value)
 
 class Y(Node):
     def __init__(self, num_children: int = 0, value: torch.Tensor = torch.zeros(1)):
@@ -160,6 +189,8 @@ class Y(Node):
     def stringify(self):
         return "y"
 
+    def duplicate(self):
+        return Y(self.value)
 
 class Const(Node):
     def __init__(self, num_children: int = 0, value: float = 0):
@@ -172,6 +203,8 @@ class Const(Node):
     def stringify(self):
         return str(self.value)
 
+    def duplicate(self):
+        return Const(self.value)
 
 # def BasicTest():
 #     y = Add(2)
