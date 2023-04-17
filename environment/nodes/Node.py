@@ -55,7 +55,6 @@ class Node(ABC):
         pass
 
 
-
 # Just got a couple of examples here. Not sure if this is the best way to do things so I am open to other
 # suggestions on how to structure this.
 class Add(Node):
@@ -102,6 +101,7 @@ class Mult(Node):
     def duplicate(self):
         return Mult()
 
+
 class Div(Node):
     def __init__(self, num_children: int = 2):
         super().__init__(num_children)
@@ -115,6 +115,7 @@ class Div(Node):
 
     def duplicate(self):
         return Div()
+
 
 class Sin(Node):
     def __init__(self, num_children: int = 1):
@@ -145,6 +146,7 @@ class Cos(Node):
     def duplicate(self):
         return Cos()
 
+
 class Log(Node):
     def __init__(self, num_children: int = 1):
         super().__init__(num_children)
@@ -159,6 +161,7 @@ class Log(Node):
     def duplicate(self):
         return Log()
 
+
 class Exp(Node):
     def __init__(self, num_children: int = 1):
         super().__init__(num_children)
@@ -172,6 +175,7 @@ class Exp(Node):
 
     def duplicate(self):
         return Exp()
+
 
 class X(Node):
     def __init__(self, num_children: int = 0, value: torch.Tensor = torch.zeros(1)):
@@ -189,7 +193,8 @@ class X(Node):
         return "x"
 
     def duplicate(self):
-        return X(self.value)
+        return X()
+
 
 class Y(Node):
     def __init__(self, num_children: int = 0, value: torch.Tensor = torch.zeros(1)):
@@ -207,7 +212,8 @@ class Y(Node):
         return "y"
 
     def duplicate(self):
-        return Y(self.value)
+        return Y()
+
 
 class Const(Node):
     def __init__(self, num_children: int = 0, value: float = 0):
@@ -222,7 +228,7 @@ class Const(Node):
         return str(self.value)
 
     def duplicate(self):
-        return Const(self.value)
+        return Const()
 
 # def BasicTest():
 #     y = Add(2)

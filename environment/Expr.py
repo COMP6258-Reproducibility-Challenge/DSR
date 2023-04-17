@@ -1,4 +1,3 @@
-from Expr import Expr
 from NodeLibrary import Library
 import numpy as np
 import torch
@@ -34,7 +33,10 @@ class Expr():
         """
         Returns string representation of expression
         """
-        return self.expr_repr
+        return self.expr_repr()
+
+    def expr_repr(self):
+        return self.node_list[0].stringify()
 
     def expr_func(self, x: torch.Tensor, y: torch.Tensor):
         for node in self.node_list:
@@ -72,7 +74,9 @@ class Expr():
         the corresponding node is valid and could be added next, and a False reflects that that node is an invalid
         addition. This will be needed to zero out the output probabilities of invalid nodes.
         """
-        mask = [True for _ in range(len(self.library))]
+        mask = [True for _ in range(self.library.get_size())]
+        if len(self.node_list) == 0:
+            return mask
 
         # make sure the tree is 4 or more nodes long
         if len(self.node_list) + len(self.stack) < 4 and len(self.stack) < 2:
