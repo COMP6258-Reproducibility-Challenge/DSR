@@ -57,7 +57,10 @@ class Expr():
 
         # add the current node as a child of a node on the stack
         if len(self.node_list) > 1:
-            self.stack.pop().add_child(node_to_add)
+            parent_node = self.stack.pop()
+            parent_node.add_child(node_to_add)
+            if parent_node.has_trig_ancestor():
+                node_to_add.add_trig_ancestor()
 
         # add the current node to the stack for every child space it has
         for _ in range(node_to_add.remaining_children()):
@@ -97,5 +100,9 @@ class Expr():
         # c<-binary->(?) If binary operator has one constant child then cannot have another
         if next_parent.num_children == 2 and next_parent.remaining_children() == 1 and next_parent.children.__class__.__name__ == "Const":
             mask[-1] = False
+
+        if next_parent.has_trig_ancestor():
+            mask = mask[:4] + [False] * 2 + \
+                mask[-5:]
 
         return mask
