@@ -11,6 +11,7 @@ class Node(ABC):
     def __init__(self, num_children):
         # num_children should be either 0,1,2
         self.num_children = num_children
+        self.trig_ancestor = None
         # children are just a list of nodes (which may be empty if num_children == 0)
         self.children = []
 
@@ -21,6 +22,12 @@ class Node(ABC):
 
     def remaining_children(self):
         return self.num_children-len(self.children)
+
+    def has_trig_ancestor(self):
+        return self.trig_ancestor
+
+    def add_trig_ancestor(self):
+        self.trig_ancestor = True
 
     @abstractmethod
     def compute(self):
@@ -54,6 +61,7 @@ class Node(ABC):
 class Add(Node):
     def __init__(self, num_children: int = 2):
         super().__init__(num_children)
+        self.trig_ancestor = False
 
     def compute(self):
         return self.children[0].compute() + self.children[1].compute()
@@ -68,6 +76,7 @@ class Add(Node):
 class Sub(Node):
     def __init__(self, num_children: int = 2):
         super().__init__(num_children)
+        self.trig_ancestor = False
 
     def compute(self):
         return self.children[0].compute() - self.children[1].compute()
@@ -82,6 +91,7 @@ class Sub(Node):
 class Mult(Node):
     def __init__(self, num_children: int = 2):
         super().__init__(num_children)
+        self.trig_ancestor = False
 
     def compute(self):
         return self.children[0].compute() / self.children[1].compute()
@@ -95,6 +105,7 @@ class Mult(Node):
 class Div(Node):
     def __init__(self, num_children: int = 2):
         super().__init__(num_children)
+        self.trig_ancestor = False
 
     def compute(self):
         return self.children[0].compute() / self.children[1].compute()
@@ -108,6 +119,7 @@ class Div(Node):
 class Sin(Node):
     def __init__(self, num_children: int = 1):
         super().__init__(num_children)
+        self.trig_ancestor = True
 
     def compute(self):
         return torch.sin(self.children[0].compute())
@@ -122,6 +134,7 @@ class Sin(Node):
 class Cos(Node):
     def __init__(self, num_children: int = 1):
         super().__init__(num_children)
+        self.trig_ancestor = True
 
     def compute(self):
         return torch.cos(self.children[0].compute())
@@ -135,6 +148,7 @@ class Cos(Node):
 class Log(Node):
     def __init__(self, num_children: int = 1):
         super().__init__(num_children)
+        self.trig_ancestor = False
 
     def compute(self):
         return torch.log(self.children[0].compute())
@@ -148,6 +162,7 @@ class Log(Node):
 class Exp(Node):
     def __init__(self, num_children: int = 1):
         super().__init__(num_children)
+        self.trig_ancestor = False
 
     def compute(self):
         return torch.exp(self.children[0].compute())
@@ -162,6 +177,7 @@ class X(Node):
     def __init__(self, num_children: int = 0, value: torch.Tensor = torch.zeros(1)):
         super().__init__(num_children)
         self.value = value
+        self.trig_ancestor = False
 
     def set_value(self, value: torch.Tensor):
         self.value = value
@@ -179,6 +195,7 @@ class Y(Node):
     def __init__(self, num_children: int = 0, value: torch.Tensor = torch.zeros(1)):
         super().__init__(num_children)
         self.value = value
+        self.trig_ancestor = False
 
     def set_value(self, value: torch.Tensor):
         self.value = value
@@ -196,6 +213,7 @@ class Const(Node):
     def __init__(self, num_children: int = 0, value: float = 0):
         super().__init__(num_children)
         self.value = value
+        self.trig_ancestor = False
 
     def compute(self):
         return self.value
