@@ -1,5 +1,6 @@
 import gymnasium as gym
 import numpy as np
+import torch
 
 from gymnasium import spaces
 
@@ -20,12 +21,12 @@ class SymbolicRegressionEnv(gym.Env):
         self.library = library
         # At each step the model outputs a node (integer) and the next hidden state (vector)
         self.action_space = spaces.Dict({"node": spaces.Discrete(library.get_size()),
-                                         "hidden_state": spaces.Box(low=-np.inf, high=np.inf, shape=(hidden_shape,))})
+                                         "hidden_state": spaces.Box(low=-torch.inf, high=torch.inf, shape=(hidden_shape,))})
 
         # At each step the model receives the current node's parent, sibling, and last hidden state
         self.observation_space = spaces.Dict({"parent": spaces.Discrete(library.get_size()),
                                               "sibling": spaces.Discrete(library.get_size()),
-                                              "hidden_state": spaces.Box(low=-np.inf, high=np.inf, shape=(hidden_shape,))})
+                                              "hidden_state": spaces.Box(low=-torch.inf, high=torch.inf, shape=(hidden_shape,))})
 
     def _get_obs(self):
         """
