@@ -55,15 +55,14 @@ class Expr():
         node_to_add = self.library.get_node(node_index)
         self.node_list.append(node_to_add)
 
-        #add the current node as a child of a node on the stack
+        # add the current node as a child of a node on the stack
         if len(self.node_list) > 1:
             self.stack.pop().add_child(node_to_add)
 
-        #add the current node to the stack for every child space it has
+        # add the current node to the stack for every child space it has
         for _ in range(node_to_add.remaining_children()):
             self.stack.append(node_to_add)
 
-    
     def valid_nodes_mask(self):
         """
         Returns a mask (list of boolean values) of the same shape as the library where a True reflects that 
@@ -72,16 +71,31 @@ class Expr():
         """
         mask = [True for _ in range(len(self.library))]
 
-        #make sure the tree is 4 or more nodes long
+        # make sure the tree is 4 or more nodes long
         if len(self.node_list) + len(self.stack) < 4 and len(self.stack) < 2:
-            mask = mask[:-3] + [False] * 3 #disallow terminals
-            
-        #make sure the tree is 30 or less nodes long
+            mask = mask[:-3] + [False] * 3  # disallow terminals
+
+        # make sure the tree is 30 or less nodes long
         else:
             if len(self.node_list) + len(self.stack) > 28:
-                mask = [False] * 4 + mask[4:] #disallow binary operators
+                mask = [False] * 4 + mask[4:]  # disallow binary operators
 
             if len(self.node_list) + len(self.stack) > 29:
-                mask = mask[:4] + [False] * 4 + mask[-3:] #disallow unary operators
-        
+                mask = mask[:4] + [False] * 4 + \
+                    mask[-3:]  # disallow unary operators
+
+        next_parent = self.stack[-1]
+
+        if next_parent.__class__.__name__ == "Log":
+            mask[7] = False
+
+        if next_parent.__class__.__name__ == "Exp":
+            mask[8] = False
+
+        if next_parent.num_children == 1:
+            mask[-1] = False
+        # c<-binary->(?) If binary operator has one constant child then cannot have another
+        if next_parent.num_children == 2 and next_parent.remaining_children() == 1 and next_parent.children.__class__.__name__ == "Const":
+            mask[-1] = False
+
         return mask
