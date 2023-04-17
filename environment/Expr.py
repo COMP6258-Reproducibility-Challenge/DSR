@@ -102,7 +102,7 @@ class Expr():
         if next_parent.num_children == 1:
             mask[-1] = False
         # c<-binary->(?) If binary operator has one constant child then cannot have another
-        if next_parent.num_children == 2 and next_parent.remaining_children() == 1 and next_parent.children.__class__.__name__ == "Const":
+        if next_parent.num_children == 2 and next_parent.remaining_children() == 1 and next_parent.children[0].__class__.__name__ == "Const":
             mask[-1] = False
 
         if next_parent.has_trig_ancestor():
