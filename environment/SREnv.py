@@ -12,20 +12,21 @@ Defines environment for symbolic regression. This is the main entry-point to the
 main thing our reinforcement learning implementation will interface with.
 """
 
+
 class SymbolicRegressionEnv(gym.Env):
     def __init__(self, library: Library, dataset: Dataset, hidden_shape=64) -> None:
         self.expr = Expr(library)
         self.dataset = dataset
         self.library = library
         # At each step the model outputs a node (integer) and the next hidden state (vector)
-        self.action_space = spaces.Dict({"node": spaces.Discrete(library.get_size()), 
+        self.action_space = spaces.Dict({"node": spaces.Discrete(library.get_size()),
                                          "hidden_state": spaces.Box(low=-np.inf, high=np.inf, shape=(hidden_shape,))})
-        
+
         # At each step the model receives the current node's parent, sibling, and last hidden state
         self.observation_space = spaces.Dict({"parent": spaces.Discrete(library.get_size()),
                                               "sibling": spaces.Discrete(library.get_size()),
                                               "hidden_state": spaces.Box(low=-np.inf, high=np.inf, shape=(hidden_shape,))})
-    
+
     def _get_obs(self):
         """
         Returns the current state of the environment (should be an element of the observation space). This includes the 
@@ -44,12 +45,16 @@ class SymbolicRegressionEnv(gym.Env):
         """
         Returns True if the model has finished outputting and the equation tree is complete; otherwise false
         """
-        return True
-    
+        if len(self.expr.node_list) > 0 and len(self.expr.stack) == 0:
+            return True
+        return False
+
     def _calculate_reward(self):
         """
         Calculate reward based on current (assume finished) equation
         """
+        if self._is_terminated():
+            self.dataset.reward(self.expr)
         return 1
 
     def reset(self):
@@ -71,10 +76,9 @@ class SymbolicRegressionEnv(gym.Env):
         """
         # Compute new environment after action has been applied here
         #
-        
+
         terminated = self._is_terminated()
         reward = self._calculate_reward() if terminated else 0
         observation = self._get_obs()
         info = self._get_info()
         return (observation, reward, terminated, False, info)
-         
