@@ -15,7 +15,7 @@ class ExprTree():
         self.library = library
         pass
 
-    def build_equation(self) -> Expr:
+    def build_expression(self) -> Expr:
         """
         Constructs callable equation from the ExprTree
         """
@@ -24,7 +24,7 @@ class ExprTree():
     def add_node(self, node_index: int):
         """
         Adds node to the tree.
-
+        
         Params
             node_index: int
                 The index of the node in the library
