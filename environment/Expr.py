@@ -46,6 +46,20 @@ class Expr():
                 node.set_value(y)
         return self.node_list[0].compute()
 
+
+    def get_parent_node(self):
+        if len(self.stack) != 0:
+            return self.stack[-1]  
+        return None
+
+
+    def get_sibling_node(self):
+        parent = self.stack[-1]
+        if parent.num_children == 2 and len(parent.children) == 1:
+            return parent.children[0]
+        return None
+
+
     def add_node(self, node_index: int):
         """
         Adds node to the tree.

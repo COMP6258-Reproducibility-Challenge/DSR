@@ -33,6 +33,8 @@ class SymbolicRegressionEnv(gym.Env):
         Returns the current state of the environment (should be an element of the observation space). This includes the 
         parent and sibling of the current node, and the hidden state produced by the RNN in the previous step
         """
+        parent = self.library.get_node_int(self.expr.get_parent_node())
+        sibling = self.library.get_node_int(self.expr.get_sibling_node())
         pass
 
     def _get_info(self):
