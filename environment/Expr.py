@@ -52,13 +52,11 @@ class Expr():
             return self.stack[-1]  
         return None
 
-
     def get_sibling_node(self):
         parent = self.stack[-1]
         if parent.num_children == 2 and len(parent.children) == 1:
             return parent.children[0]
         return None
-
 
     def add_node(self, node_index: int):
         """
