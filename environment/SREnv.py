@@ -4,9 +4,10 @@ import torch
 
 from gymnasium import spaces
 
-from Expr import Expr
-from NodeLibrary import Library
-from Dataset import Dataset
+from .Expr import Expr
+from .ExprTree import ExprTree
+from .NodeLibrary import Library
+from .Dataset import Dataset
 
 """
 Defines environment for symbolic regression. This is the main entry-point to the whole "environment" package, and the 
@@ -16,7 +17,7 @@ main thing our reinforcement learning implementation will interface with.
 
 class SymbolicRegressionEnv(gym.Env):
     def __init__(self, library: Library, dataset: Dataset, hidden_shape=64) -> None:
-        self.expr = Expr(library)
+        self.expr_tree = ExprTree(library)
         self.dataset = dataset
         self.library = library
         self.action = None
@@ -42,13 +43,13 @@ class SymbolicRegressionEnv(gym.Env):
         Returns auxillary information dictionary about the environment/last step produced
         (i.e. current tree size maybe? idk we'll see)
         """
-        pass
+        return {"mask": self.expr_tree.valid_nodes_mask()}
 
     def _is_terminated(self) -> bool:
         """
         Returns True if the model has finished outputting and the equation tree is complete; otherwise false
         """
-        if len(self.expr.node_list) > 0 and len(self.expr.stack) == 0:
+        if len(self.expr_tree.node_list) > 0 and len(self.expr_tree.stack) == 0:
             return True
         return False
 
@@ -56,7 +57,7 @@ class SymbolicRegressionEnv(gym.Env):
         """
         Calculate reward based on current (assume finished) equation
         """
-        return self.dataset.reward(self.expr)
+        return self.dataset.reward(Expr(self.library, self.expr_tree.node_list))
 
     def reset(self):
         """
@@ -65,7 +66,7 @@ class SymbolicRegressionEnv(gym.Env):
         # Reset relevant properties here
         #
 
-        self.expr = Expr(self.library)
+        self.expr_tree = ExprTree(self.library)
         self.action = None
         self.obs = {'parent' : None, 'sibling' : None, 'hidden_state' : None}
 
@@ -86,7 +87,7 @@ class SymbolicRegressionEnv(gym.Env):
         self.update_obs()
         self.action = action
         #add node to the expression
-        self.expr.add_node(action['node'])
+        self.expr_tree.add_node(action['node'])
 
         terminated = self._is_terminated()
         reward = self._calculate_reward() if terminated else 0
@@ -95,7 +96,7 @@ class SymbolicRegressionEnv(gym.Env):
         return (observation, reward, terminated, False, info)
 
     def update_obs(self):
-        parent = self.library.get_node_int(self.expr.get_parent_node())
-        sibling = self.library.get_node_int(self.expr.get_sibling_node())
+        parent = self.library.get_node_int(self.expr_tree.get_parent_node())
+        sibling = self.library.get_node_int(self.expr_tree.get_sibling_node())
         hidden_state = self.action['hidden_state']
         self.obs = {'parent' : parent, 'sibling' : sibling, 'hidden_state' : hidden_state}

@@ -63,10 +63,10 @@ class Learner():
             observation, info = self.env.reset()
             done = False
             while not done:
-                action, hidden, log_prob, entropy = self.model.sample(observation)
+                action, hidden, log_prob, entropy = self.model.sample_action(observation)
                 running_entropy += entropy
                 running_log_prob += log_prob
-                action_dict = {"node": action, "hidden": hidden}
+                action_dict = {"node": action, "hidden_state": hidden}
                 observation, reward, done, _, info = self.env.step(action_dict)
 
             # This will be equal to the last reward generated, as an expression only gets rewarded once it is completed.
@@ -113,10 +113,10 @@ class Learner():
                 max_reward = reward
                 best_expr = expr
             
-            if (epoch+1) % 10 == 0:
-                # I am hoping having best_expr inside the f-string automatically calls __repr__, not sure though lmao. 
-                # Easy to fix if not.
-                print(f"Epoch: {epoch}/{self.epochs} - Expr: {best_expr} - Reward: {reward} - Loss: {loss}")
+            # if (epoch+1) % 10 == 0:
+            #     # I am hoping having best_expr inside the f-string automatically calls __repr__, not sure though lmao. 
+            #     # Easy to fix if not.
+            print(f"Epoch: {epoch}/{self.epochs} - Expr: {best_expr} - Reward: {reward} - Loss: {loss}")
         
         return losses, rewards, best_expr, max_reward
     

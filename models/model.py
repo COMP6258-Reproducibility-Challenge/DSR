@@ -47,7 +47,7 @@ class Regressor(nn.Module):
 
         return prob_dist, last_hidden_state
 
-    def sample_action(self, x, hidden_state, mask):
+    def sample_action(self, observation, mask):
         """
         Samples an action given an observation
         Params
@@ -62,8 +62,9 @@ class Regressor(nn.Module):
             Tuple of the generated action, the hidden state, the log probability of choosing that action, and the entropy of the
             generated categorical distribution
         """
-
-        action_dist, prev_hidden_state = self.forward(x, hidden_state)
+        x = torch.concat((observation["parent"], observation["sibling"]))
+        hidden_state = observation["hidden_state"]
+        action_dist, next_hidden_state = self.forward(x, hidden_state)
         # Use mask to zero out probabilities here
         # those are of the invalid nodes
         action_dist *= torch.as_tensor(mask).reshape(action_dist.shape)
@@ -74,4 +75,4 @@ class Regressor(nn.Module):
         log_prob = dist.log_prob(action)
 
         entropy = dist.entropy()
-        return action, hidden_state, log_prob, entropy
+        return action, next_hidden_state, log_prob, entropy

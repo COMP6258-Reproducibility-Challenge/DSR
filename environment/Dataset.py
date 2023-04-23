@@ -1,11 +1,9 @@
 import numpy as np
 
-from Expr import Expr
+from .Expr import Expr
 import torch
-from NodeLibrary import Library
-from nodes import Node
-
-
+from .NodeLibrary import Library
+from .nodes import Node
 
 class Dataset():
     def __init__(self, target_expr: Expr, numpoints=100):
