@@ -30,7 +30,7 @@ class Learner():
             A dictionary holding different loss terms and other auxilliary info
         """
         # Filter the low performing rewards, keeping only the top quantile of expressions
-        r_eps = torch.quantile(rewards, 1-self.risk_factor, interpolation='lower')
+        r_eps = torch.quantile(rewards, 1-self.risk_factor, interpolation='linear')
         keep = rewards >= r_eps
         rewards_keep = rewards[keep]
         log_probs_keep = log_probs[keep]
@@ -108,7 +108,7 @@ class Learner():
         for epoch in range(self.epochs):
             expr, loss_dict = self.update()
             reward = loss_dict["max_reward"]
-            loss = loss_dict["loss"]
+            loss = loss_dict["loss"].detach()
             rewards.append(reward)
             losses.append(loss)
             if reward > max_reward:
