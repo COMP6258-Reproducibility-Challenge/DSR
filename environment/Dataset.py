@@ -11,9 +11,10 @@ class Dataset():
         self.X = torch.linspace(-1, 1, numpoints)
         self.Y = torch.linspace(-1, 1, numpoints)
         self.z = target_expr.expr_func(self.X, self.Y)
+        self.normalising_const = torch.std(self.z)
 
     def NRMSELoss(self, yhat, y):
-        return (1/len(y)) * torch.sqrt(torch.mean((yhat-y)**2))
+        return (1/self.normalising_const) * torch.sqrt(torch.mean((yhat-y)**2))
 
     def reward(self, expr: Expr):
         """
