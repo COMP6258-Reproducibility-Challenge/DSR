@@ -14,10 +14,10 @@ Defines environment for symbolic regression. This is the main entry-point to the
 main thing our reinforcement learning implementation will interface with.
 """
 
-
 class SymbolicRegressionEnv(gym.Env):
     def __init__(self, library: Library, dataset: Dataset, hidden_shape=64) -> None:
         self.expr_tree = ExprTree(library)
+        self.expr_tree.node_list = []
         self.dataset = dataset
         self.library = library
         self.action = None
@@ -43,7 +43,10 @@ class SymbolicRegressionEnv(gym.Env):
         Returns auxillary information dictionary about the environment/last step produced
         (i.e. current tree size maybe? idk we'll see)
         """
-        return {"mask": self.expr_tree.valid_nodes_mask()}
+        if not self._is_terminated():
+            return {"mask": self.expr_tree.valid_nodes_mask()}
+        else:
+            return {"mask": None}
 
     def _is_terminated(self) -> bool:
         """
@@ -67,6 +70,8 @@ class SymbolicRegressionEnv(gym.Env):
         #
 
         self.expr_tree = ExprTree(self.library)
+        self.expr_tree.node_list = []
+        # print(self.expr_tree.node_list)
         self.action = None
         self.obs = {'parent' : None, 'sibling' : None, 'hidden_state' : None}
 
@@ -84,8 +89,8 @@ class SymbolicRegressionEnv(gym.Env):
         #
 
         #update the observation
-        self.update_obs()
         self.action = action
+        self.update_obs()
         #add node to the expression
         self.expr_tree.add_node(action['node'])
 

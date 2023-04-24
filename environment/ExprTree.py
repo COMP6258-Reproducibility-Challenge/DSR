@@ -14,13 +14,12 @@ class ExprTree():
         self.node_list = node_list
         self.library = library
         self.stack = []
-        pass
 
     def build_expression(self) -> Expr:
         """
         Constructs callable equation from the ExprTree
         """
-        return Expr(self.node_list)
+        return Expr(self.library, self.node_list)
 
     def get_parent_node(self):
         if len(self.stack) != 0:
@@ -28,6 +27,8 @@ class ExprTree():
         return None
 
     def get_sibling_node(self):
+        if len(self.stack) == 0:
+            return None
         parent = self.stack[-1]
         if parent.num_children == 2 and len(parent.children) == 1:
             return parent.children[0]
@@ -67,33 +68,57 @@ class ExprTree():
 
         # make sure the tree is 4 or more nodes long
         if len(self.node_list) + len(self.stack) < 4 and len(self.stack) < 2:
-            mask = mask[:-3] + [False] * 3  # disallow terminals
+            # disallow terminals
+            for i in range(self.library.get_size()):
+                if self.library.get_node(i).num_children == 0:
+                    mask[i] = False
 
         # make sure the tree is 30 or less nodes long
         else:
             if len(self.node_list) + len(self.stack) > 28:
-                mask = [False] * 4 + mask[4:]  # disallow binary operators
+                # disallow binary operators
+                for i in range(self.library.get_size()):
+                    if self.library.get_node(i).num_children == 2:
+                        mask[i] = False
 
             if len(self.node_list) + len(self.stack) > 29:
-                mask = mask[:4] + [False] * 4 + \
-                    mask[-3:]  # disallow unary operators
+                # disallow unary operators
+                for i in range(self.library.get_size()):
+                    if self.library.get_node(i).num_children == 1:
+                        mask[i] = False
 
         next_parent = self.stack[-1]
 
         if next_parent.__class__.__name__ == "Log":
-            mask[7] = False
+            for i in range(self.library.get_size()):
+                if self.library.get_node(i).__class__.__name__ == "Exp":
+                    mask[i] = False
+                    break
 
         if next_parent.__class__.__name__ == "Exp":
-            mask[8] = False
+            for i in range(self.library.get_size()):
+                if self.library.get_node(i).__class__.__name__ == "Log":
+                    mask[i] = False
+                    break
 
+        # if the parent is unary
         if next_parent.num_children == 1:
-            mask[-1] = False
+            #do not allow a constant
+            for i in range(self.library.get_size()):
+                if self.library.get_node(i).__class__.__name__ == "Const":
+                    mask[i] = False
+                    break
+
         # c<-binary->(?) If binary operator has one constant child then cannot have another
         if next_parent.num_children == 2 and next_parent.remaining_children() == 1 and next_parent.children[0].__class__.__name__ == "Const":
-            mask[-1] = False
+            for i in range(self.library.get_size()):
+                if self.library.get_node(i).__class__.__name__ == "Const":
+                    mask[i] = False
+                    break
 
         if next_parent.has_trig_ancestor():
-            mask = mask[:4] + [False] * 2 + \
-                mask[-5:]
+            for i in range(self.library.get_size()):
+                if self.library.get_node(i).trig_ancestor == True:
+                    mask[i] = False
 
         return mask
