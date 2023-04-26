@@ -12,9 +12,9 @@ from environment.nodes.Node import *
 nodes_list = [Add, Sub, Mult, Div, Sin, Cos, Log, Exp, X]#, Y]#, Const]
 library = Library(nodes_list)
 
-embedding_size = 128
-hidden_size = 256
-model = Regressor(embedding_size, hidden_size, library.get_size()).to(device="cuda")
+embedding_size = 32
+hidden_size = 32
+model = Regressor(embedding_size, hidden_size, library.get_size())
 
 expression = ExprTree(library)
 # x^4 + x^3 + x^2 + x

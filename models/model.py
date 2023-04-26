@@ -46,10 +46,8 @@ class Regressor(nn.Module):
         """
         parent_emb = self.embedding[parent] if parent is not None else torch.zeros((self.embedding_size, ))
         sibling_emb = self.embedding[sibling] if sibling is not None else torch.zeros((self.embedding_size, ))
-        # print(torch.concat((parent_emb, sibling_emb)))
-        # print(hidden_state)
-        (h,c) = self.lstm(torch.concat((parent_emb, sibling_emb)), hidden_state)
-        x = self.fc(c)
+        h,c = self.lstm(torch.concat((parent_emb, sibling_emb)), hidden_state)
+        x = self.fc(h)
         prob_dist = F.softmax(x, dim=0)
 
         return prob_dist, (h,c)
