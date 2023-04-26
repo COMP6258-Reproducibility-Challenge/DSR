@@ -31,7 +31,7 @@ class Learner():
         """
         # Filter the low performing rewards, keeping only the top quantile of expressions
         r_eps = torch.quantile(rewards, 1-self.risk_factor, interpolation='linear')
-        keep = rewards > r_eps
+        keep = rewards >= r_eps
         rewards_keep = rewards[keep]
         log_probs_keep = log_probs[keep]
         entropies_keep = entropies[keep]
@@ -63,13 +63,16 @@ class Learner():
             observation, info = self.env.reset()
             done = False
             while not done:
-                action, hidden, log_prob, entropy = self.model.sample(observation)
+                mask = info["mask"]
+                action, hidden, log_prob, entropy = self.model.sample_action(observation, mask)
                 running_entropy += entropy
                 running_log_prob += log_prob
-                action_dict = {"node": action, "hidden": hidden}
+                action_dict = {"node": action.item(), "hidden_state": hidden}
                 observation, reward, done, _, info = self.env.step(action_dict)
 
             # This will be equal to the last reward generated, as an expression only gets rewarded once it is completed.
+            if torch.isnan(reward):
+                reward = 0
             rewards[i] = reward
             probs[i] = running_log_prob
             entropies[i] = running_entropy
@@ -85,13 +88,12 @@ class Learner():
             The best expression of the batch, and the generated loss dictionary of the batch
         """
         self.optim.zero_grad()
-        log_probs, entropies, rewards, exprs = self.get_batch()
+        rewards, entropies, log_probs, exprs = self.get_batch()
         loss_dict = self.loss(log_probs, entropies, rewards)
         loss = loss_dict["loss"]
         loss.backward()
         self.optim.step()
-
-        best_expr = exprs["max_reward_i"].build_equation()
+        best_expr = exprs[loss_dict["max_reward_i"]].build_expression()
         return best_expr, loss_dict
     
     def train(self):
@@ -99,24 +101,26 @@ class Learner():
         The main training loop. This will keep track of the rewards and losses, as well as the maximum reward 
         generated and its associated expression. These are all then returned for graphing/analysis.
         """
-        max_reward = 0
+        max_reward = -float("inf")
         best_expr = None
         rewards = []
         losses = []
         for epoch in range(self.epochs):
             expr, loss_dict = self.update()
             reward = loss_dict["max_reward"]
-            loss = loss_dict["loss"]
+            loss = loss_dict["loss"].detach()
             rewards.append(reward)
             losses.append(loss)
             if reward > max_reward:
                 max_reward = reward
                 best_expr = expr
             
-            if (epoch+1) % 10 == 0:
-                # I am hoping having best_expr inside the f-string automatically calls __repr__, not sure though lmao. 
-                # Easy to fix if not.
-                print(f"Epoch: {epoch}/{self.epochs} - Expr: {best_expr} - Reward: {reward} - Loss: {loss}")
+            # if (epoch+1) % 10 == 0:
+            #     # I am hoping having best_expr inside the f-string automatically calls __repr__, not sure though lmao. 
+            #     # Easy to fix if not.
+            print(f"Epoch: {epoch}/{self.epochs} - Expr: {best_expr} - Reward: {reward} - Loss: {loss}")
+            if reward == 1.0:
+                break
         
         return losses, rewards, best_expr, max_reward
     

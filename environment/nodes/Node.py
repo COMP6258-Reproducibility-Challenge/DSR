@@ -66,7 +66,7 @@ class Add(Node):
         return self.children[0].compute() + self.children[1].compute()
 
     def stringify(self):
-        return self.children[0].stringify() + " + " + self.children[1].stringify()
+        return "(" + self.children[0].stringify() + ")" + " + " + "(" + self.children[1].stringify() + ")"
 
     def duplicate(self):
         return Add()
@@ -81,7 +81,7 @@ class Sub(Node):
         return self.children[0].compute() - self.children[1].compute()
 
     def stringify(self):
-        return self.children[0].stringify() + " - " + self.children[1].stringify()
+        return "(" + self.children[0].stringify() + ")" + " - " + "(" + self.children[1].stringify() + ")"
 
     def duplicate(self):
         return Sub()
@@ -93,10 +93,10 @@ class Mult(Node):
         self.trig_ancestor = False
 
     def compute(self):
-        return self.children[0].compute() / self.children[1].compute()
+        return self.children[0].compute() * self.children[1].compute()
 
     def stringify(self):
-        return self.children[0].stringify() + " * " + self.children[1].stringify()
+        return "(" + self.children[0].stringify() + ")" + " * " + "(" + self.children[1].stringify() + ")"
 
     def duplicate(self):
         return Mult()
@@ -111,7 +111,7 @@ class Div(Node):
         return self.children[0].compute() / self.children[1].compute()
 
     def stringify(self):
-        return self.children[0].stringify() + " / " + self.children[1].stringify()
+        return "(" + self.children[0].stringify() + ")" + " / " + "(" + self.children[1].stringify() + ")"
 
     def duplicate(self):
         return Div()

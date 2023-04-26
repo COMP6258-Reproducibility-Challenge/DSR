@@ -1,4 +1,4 @@
-from nodes import Node
+from .nodes import Node
 
 class Library():
     """
@@ -17,7 +17,7 @@ class Library():
         return len(self.nodes)
     
     def get_node(self, node_index: int):
-        return self.nodes[node_index].duplicate()
+        return self.nodes[node_index]()
 
     def get_node_int(self, node: Node):
         for i in range(len(self.nodes)):
