@@ -30,6 +30,7 @@ class SymbolicRegressionEnv(gym.Env):
         self.observation_space = spaces.Dict({"parent": spaces.Discrete(library.get_size()),
                                               "sibling": spaces.Discrete(library.get_size()),
                                               "hidden_state": spaces.Box(low=-torch.inf, high=torch.inf, shape=(hidden_shape,))})
+        self.hidden_shape = hidden_shape
 
     def _get_obs(self):
         """
@@ -46,7 +47,7 @@ class SymbolicRegressionEnv(gym.Env):
         if not self._is_terminated():
             return {"mask": self.expr_tree.valid_nodes_mask()}
         else:
-            return {"mask": None}
+            return {"mask": [True for _ in range(self.library.get_size())]}
 
     def _is_terminated(self) -> bool:
         """
@@ -73,7 +74,7 @@ class SymbolicRegressionEnv(gym.Env):
         self.expr_tree.node_list = []
         # print(self.expr_tree.node_list)
         self.action = None
-        self.obs = {'parent' : None, 'sibling' : None, 'hidden_state' : None}
+        self.obs = {'parent' : -1, 'sibling' : -1, 'hidden_state' : (torch.zeros(self.hidden_shape),torch.zeros((self.hidden_shape,)))}
 
         observation = self._get_obs()
         info = self._get_info()

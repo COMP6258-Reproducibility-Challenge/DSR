@@ -44,11 +44,19 @@ class Regressor(nn.Module):
         Returns
             Tuple of probability distribution and hidden state
         """
-        parent_emb = self.embedding[parent] if parent is not None else torch.zeros((self.embedding_size, ))
-        sibling_emb = self.embedding[sibling] if sibling is not None else torch.zeros((self.embedding_size, ))
-        h,c = self.lstm(torch.concat((parent_emb, sibling_emb)), hidden_state)
+        parent_emb = self.embedding[parent]
+        parent_emb[parent == -1] = 0
+        #parent_emb = torch.where(parent != -1, self.embedding[parent], torch.zeros_like(self.embedding[parent]))
+        
+        # parent_emb = self.embedding[parent] if parent is not None else torch.zeros((self.embedding_size, ))
+        # sibling_emb = self.embedding[sibling] if sibling is not None else torch.zeros((self.embedding_size, ))
+        # sibling_emb = torch.where(parent != -1, self.embedding[sibling], torch.zeros_like(self.embedding[sibling]))
+        sibling_emb = self.embedding[sibling]
+        sibling_emb[sibling == -1] = 0
+
+        h,c = self.lstm(torch.concat((parent_emb, sibling_emb), dim=-1), hidden_state)
         x = self.fc(h)
-        prob_dist = F.softmax(x, dim=0)
+        prob_dist = F.softmax(x, dim=-1)
 
         return prob_dist, (h,c)
 
@@ -71,16 +79,20 @@ class Regressor(nn.Module):
         parent, sibling = observation["parent"], observation["sibling"]
         hidden_state = observation["hidden_state"]
         action_dist, next_hidden_state = self.forward(parent, sibling, hidden_state)
+
+        entropy = torch.sum(-action_dist * torch.log(action_dist), dim=-1)
+
+        masked_dist = action_dist * mask
+        normalised_masked_dist = masked_dist / torch.sum(masked_dist, dim=-1).unsqueeze(1)
         # Use mask to zero out probabilities here
         # those are of the invalid nodes
         # action_dist *= torch.as_tensor(mask).reshape(action_dist.shape)
         # action_dist /= action_dist.sum()
-
-        dist = Categorical(action_dist)
+        dist = Categorical(normalised_masked_dist)
         action = dist.sample()
-        while not mask[action]:
-            action = dist.sample()    
+        
+        # while not mask[action]:
+        #     action = dist.sample()    
         log_prob = dist.log_prob(action)
 
-        entropy = dist.entropy()
         return action, next_hidden_state, log_prob, entropy

@@ -7,7 +7,7 @@ class Learner():
     """
     Runs the main body of the algortithm, including model learning and generating the best expressions
     """
-    def __init__(self, env: SREnv, model, risk_factor=0.05, entropy_coef=0.005, epochs=2000, batch_size=1000, lr=0.0005):
+    def __init__(self, env, model, risk_factor=0.05, entropy_coef=0.005, epochs=2000, batch_size=1000, lr=0.0005):
         self.env = env
         self.model = model
         self.optim = optim.Adam(model.parameters(), lr=lr)
@@ -79,6 +79,27 @@ class Learner():
             exprs.append(self.env.expr_tree)
 
         return rewards, entropies, probs, exprs
+
+    def get_multi_batch(self):
+        obs, info = self.env.reset()
+        mask = info["mask"]
+        done = torch.full((self.batch_size, ), False)
+        probs = torch.zeros((self.batch_size,))
+        entropies = torch.zeros((self.batch_size,))
+        while torch.any(done == False):
+            # need to filter out dones here
+            # pobs = self.env.filter_obs(obs, done)
+            # print(obs["parent"])
+            action, hidden, log_prob, entropy = self.model.sample_action(obs, mask)
+            probs[~done] += log_prob
+            entropies[~done] += entropy
+
+            action_dict = {"node": action, "hidden_state": hidden}
+            action_dict = self.env.unbatch_actions(action_dict)
+            obs, reward, done, info = self.env.step(action_dict)
+            mask = info["mask"]
+        reward = torch.nan_to_num(reward, 0)
+        return reward, entropies, probs, self.env.get_exprs()
     
     def update(self):
         """
@@ -88,7 +109,7 @@ class Learner():
             The best expression of the batch, and the generated loss dictionary of the batch
         """
         self.optim.zero_grad()
-        rewards, entropies, log_probs, exprs = self.get_batch()
+        rewards, entropies, log_probs, exprs = self.get_multi_batch()
         loss_dict = self.loss(log_probs, entropies, rewards)
         loss = loss_dict["loss"]
         loss.backward()
