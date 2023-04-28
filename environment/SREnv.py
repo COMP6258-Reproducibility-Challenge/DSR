@@ -15,7 +15,7 @@ main thing our reinforcement learning implementation will interface with.
 """
 
 class SymbolicRegressionEnv(gym.Env):
-    def __init__(self, library: Library, dataset: Dataset, hidden_shape=64) -> None:
+    def __init__(self, library: Library, dataset: Dataset, hidden_shape=64, device=torch.device("cpu")) -> None:
         self.expr_tree = ExprTree(library)
         self.expr_tree.node_list = []
         self.dataset = dataset
@@ -30,6 +30,8 @@ class SymbolicRegressionEnv(gym.Env):
         self.observation_space = spaces.Dict({"parent": spaces.Discrete(library.get_size()),
                                               "sibling": spaces.Discrete(library.get_size()),
                                               "hidden_state": spaces.Box(low=-torch.inf, high=torch.inf, shape=(hidden_shape,))})
+        self.hidden_shape = hidden_shape
+        self.device=device
 
     def _get_obs(self):
         """
@@ -46,7 +48,7 @@ class SymbolicRegressionEnv(gym.Env):
         if not self._is_terminated():
             return {"mask": self.expr_tree.valid_nodes_mask()}
         else:
-            return {"mask": None}
+            return {"mask": [True for _ in range(self.library.get_size())]}
 
     def _is_terminated(self) -> bool:
         """
@@ -73,7 +75,8 @@ class SymbolicRegressionEnv(gym.Env):
         self.expr_tree.node_list = []
         # print(self.expr_tree.node_list)
         self.action = None
-        self.obs = {'parent' : None, 'sibling' : None, 'hidden_state' : None}
+        self.obs = {'parent' : -1, 'sibling' : -1, 'hidden_state' : (torch.zeros(self.hidden_shape, device=self.device),
+                                                                     torch.zeros(self.hidden_shape,device=self.device))}
 
         observation = self._get_obs()
         info = self._get_info()
@@ -103,5 +106,6 @@ class SymbolicRegressionEnv(gym.Env):
     def update_obs(self):
         parent = self.library.get_node_int(self.expr_tree.get_parent_node())
         sibling = self.library.get_node_int(self.expr_tree.get_sibling_node())
+
         hidden_state = self.action['hidden_state']
         self.obs = {'parent' : parent, 'sibling' : sibling, 'hidden_state' : hidden_state}
