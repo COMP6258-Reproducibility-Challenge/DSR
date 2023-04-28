@@ -11,7 +11,7 @@ class Library():
                 The list of available nodes in the library
         """
         self.nodes = nodes
-        pass
+        self.names = [node().__class__.__name__ for node in self.nodes]
 
     def get_size(self):
         return len(self.nodes)
@@ -20,8 +20,7 @@ class Library():
         return self.nodes[node_index]()
 
     def get_node_int(self, node: Node):
-        for i in range(len(self.nodes)):
-            lib_node = self.nodes[i]
-            if node.__class__.__name__ == lib_node.__class__.__name__:
+        for i, name in enumerate(self.names):
+            if node.__class__.__name__ == name:
                 return i
         return -1

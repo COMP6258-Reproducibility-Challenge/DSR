@@ -7,7 +7,8 @@ class Learner():
     """
     Runs the main body of the algortithm, including model learning and generating the best expressions
     """
-    def __init__(self, env, model, risk_factor=0.05, entropy_coef=0.005, epochs=2000, batch_size=1000, lr=0.0005):
+    def __init__(self, env, model, risk_factor=0.05, entropy_coef=0.005, epochs=2000, batch_size=1000,
+                 lr=0.0005, device=torch.device("cpu")):
         self.env = env
         self.model = model
         self.optim = optim.Adam(model.parameters(), lr=lr)
@@ -16,6 +17,7 @@ class Learner():
         self.entropy_coef = entropy_coef
         self.epochs = epochs
         self.batch_size = batch_size
+        self.device = device
 
     def loss(self, log_probs, entropies, rewards):
         """
@@ -52,9 +54,9 @@ class Learner():
         Generates a batch of expressions, as well as their associated rewards, entropies, and log probabilities.
         All these terms can then be used in the loss function.
         """
-        rewards = torch.empty((self.batch_size,))
-        probs = torch.empty((self.batch_size,))
-        entropies = torch.empty((self.batch_size,))
+        rewards = torch.empty((self.batch_size,), device=self.device)
+        probs = torch.empty((self.batch_size,), device=self.device)
+        entropies = torch.empty((self.batch_size,), device=self.device)
         exprs = []
 
         for i in range(self.batch_size):
@@ -83,13 +85,12 @@ class Learner():
     def get_multi_batch(self):
         obs, info = self.env.reset()
         mask = info["mask"]
-        done = torch.full((self.batch_size, ), False)
-        probs = torch.zeros((self.batch_size,))
-        entropies = torch.zeros((self.batch_size,))
+        done = torch.full((self.batch_size, ), False, device=self.device)
+        probs = torch.zeros((self.batch_size,), device=self.device)
+        entropies = torch.zeros((self.batch_size,), device=self.device)
         while torch.any(done == False):
             # need to filter out dones here
             # pobs = self.env.filter_obs(obs, done)
-            # print(obs["parent"])
             action, hidden, log_prob, entropy = self.model.sample_action(obs, mask)
             probs[~done] += log_prob
             entropies[~done] += entropy

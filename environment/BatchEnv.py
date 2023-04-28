@@ -5,15 +5,16 @@ import torch
 from .SREnv import SymbolicRegressionEnv
 
 class BatchEnv():
-    def __init__(self, library, dataset, hidden_size, batch_size=1000):
-        self.envs = [SymbolicRegressionEnv(library, dataset, hidden_size) for _ in range(batch_size)]
-        self.dones = torch.full((batch_size,), False)
-        self.rewards = torch.empty((batch_size, ))
+    def __init__(self, library, dataset, hidden_size, batch_size=1000, device=torch.device("cpu")):
+        self.envs = [SymbolicRegressionEnv(library, dataset, hidden_size, device=device) for _ in range(batch_size)]
+        self.dones = torch.full((batch_size,), False, device=device)
+        self.rewards = torch.empty((batch_size,), device=device)
         self.batch_size = batch_size
+        self.device = device
 
     def reset(self):
-        self.dones = torch.full((self.batch_size,), False)
-        self.rewards = torch.empty((self.batch_size, ))
+        self.dones = torch.full((self.batch_size,), False, device=self.device)
+        self.rewards = torch.empty((self.batch_size, ), device=self.device)
         observations = []
         infos = []
         for env in self.envs:
@@ -48,13 +49,13 @@ class BatchEnv():
             batched_obs["parent"].append(obs["parent"])
             batched_obs["sibling"].append(obs["sibling"])
             batched_obs["hidden_state"].append(obs["hidden_state"])
-        batched_obs["parent"] = torch.tensor(batched_obs["parent"])
-        batched_obs["sibling"] = torch.tensor(batched_obs["sibling"])
+        batched_obs["parent"] = torch.tensor(batched_obs["parent"], device=self.device)
+        batched_obs["sibling"] = torch.tensor(batched_obs["sibling"], device=self.device)
         batched_obs["hidden_state"] = (
             torch.stack([t[0] for t in batched_obs["hidden_state"]]),
             torch.stack([t[1] for t in batched_obs["hidden_state"]])
         )
-        
+
         return batched_obs
 
     def get_batch_info(self, infos):
@@ -62,7 +63,7 @@ class BatchEnv():
         for info in infos:
             batched_infos["mask"].append(info["mask"])
         
-        batched_infos["mask"] = torch.tensor(batched_infos["mask"])
+        batched_infos["mask"] = torch.tensor(batched_infos["mask"], device=self.device)
         
         return batched_infos
 

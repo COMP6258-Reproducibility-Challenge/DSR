@@ -10,7 +10,7 @@ class Regressor(nn.Module):
     Model to carry out symbolic regression
     """
 
-    def __init__(self, embedding_size, hidden_size, output_size):
+    def __init__(self, embedding_size, hidden_size, output_size, device=torch.device("cpu")):
         """
         Defines the LSTM and embedding model
         Params
@@ -27,10 +27,10 @@ class Regressor(nn.Module):
         self.output_size = output_size
         self.hidden_size = hidden_size
         self.embedding_size = embedding_size
-        self.embedding = torch.empty(output_size, embedding_size)
+        self.embedding = torch.empty(output_size, embedding_size, device=device)
         nn.init.kaiming_normal_(self.embedding)
-        self.lstm = nn.LSTMCell(embedding_size * 2, hidden_size)
-        self.fc = nn.Linear(hidden_size, output_size)
+        self.lstm = nn.LSTMCell(embedding_size * 2, hidden_size, device=device)
+        self.fc = nn.Linear(hidden_size, output_size, device=device)
 
     def forward(self, parent, sibling, hidden_state):
         """
@@ -46,6 +46,7 @@ class Regressor(nn.Module):
         """
         parent_emb = self.embedding[parent]
         parent_emb[parent == -1] = 0
+        
         #parent_emb = torch.where(parent != -1, self.embedding[parent], torch.zeros_like(self.embedding[parent]))
         
         # parent_emb = self.embedding[parent] if parent is not None else torch.zeros((self.embedding_size, ))
