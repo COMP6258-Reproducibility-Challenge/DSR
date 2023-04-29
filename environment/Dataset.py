@@ -15,7 +15,6 @@ class Dataset():
         self.z = target_expr.expr_func(self.X, self.Y)
         self.normalising_const = torch.std(self.z)
 
-    @torch.no_grad()
     def NRMSELoss(self, yhat, y):
         return (1/self.normalising_const) * torch.sqrt(torch.mean((yhat-y)**2))
 

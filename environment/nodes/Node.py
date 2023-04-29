@@ -216,7 +216,7 @@ class Y(Node):
 
 
 class Const(Node):
-    def __init__(self, num_children: int = 0, value: float = 0):
+    def __init__(self, num_children: int = 0, value: torch.Tensor = torch.ones(1)):
         super().__init__(num_children)
         self.value = value
         self.trig_ancestor = False
