@@ -73,7 +73,8 @@ class Expr():
             if node.__class__.__name__ == "Const":
                 count+=1
         x0 = np.ones(count)
-        opt = minimize(self.func_to_optimize,x0,args=(dataset),jac=self.jac,method='L-BFGS-B',options = {"gtol" : 1e-3})
-        new_const = opt["x"]
-        self.set_const(new_const)
+        if count != 0 :
+            opt = minimize(self.func_to_optimize,x0,args=(dataset),jac=self.jac,method='L-BFGS-B',options = {"gtol" : 1e-3})
+            new_const = opt["x"]
+            self.set_const(new_const)
         return

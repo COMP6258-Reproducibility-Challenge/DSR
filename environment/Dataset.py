@@ -40,7 +40,7 @@ class Dataset():
                 The expression to test
 
         Returns:
-            float which is the squashed nrmse (reward) of the proposed expression on the dataset
+            float which is the squashed nrmse (reward) of the proposed expression on the dataset which has gradients enabled
         """
 
         yhat = expr.expr_func(self.X, self.Y)

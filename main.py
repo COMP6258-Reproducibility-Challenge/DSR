@@ -13,22 +13,22 @@ from environment.BatchEnv import BatchEnv
 
 # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 device = torch.device("cpu")
-# nodes_list = [Add, Sub, Mult, Div, Sin, Cos, Log, Exp, X, Y, Const]
-# library = Library(nodes_list)
+nodes_list = [Add, Sub, Mult, Div, Sin, Cos, Log, Exp, X, Y, Const]
+library = Library(nodes_list)
 
-# embedding_size = 32
-# hidden_size = 32
-# model = Regressor(embedding_size, hidden_size, library.get_size(), device=device)
+embedding_size = 32
+hidden_size = 32
+model = Regressor(embedding_size, hidden_size, library.get_size(), device=device)
 
-# expression = ExprTree(library)
+expression = ExprTree(library)
 # # x^3 + 5
-# expression.add_node(0)
-# expression.add_node(2)
-# expression.add_node(2)
-# expression.add_node(8)
-# expression.add_node(8)
-# expression.add_node(8)
-# expression.add_node(10)
+expression.add_node(0)
+expression.add_node(2)
+expression.add_node(2)
+expression.add_node(8)
+expression.add_node(8)
+expression.add_node(8)
+expression.add_node(10)
 # # x^4 + x^3 + x^2 + x
 # # expression.add_node(0)
 # # expression.add_node(0)
@@ -121,52 +121,52 @@ device = torch.device("cpu")
 # # expression.add_node(9)
 # # expression.add_node(9)
 # # expression.add_node(9)
-# target_expr = Expr(library, expression.node_list)
-# print(f"Target: {target_expr}")
-# dataset = Dataset(target_expr, numpoints=20, lb=0, ub=1)
-
-# # env = SymbolicRegressionEnv(library, dataset, hidden_size)
-# env = BatchEnv(library, dataset, hidden_size, batch_size=1000, device=device)
-
-# learner = Learner(env, model, epochs=2000, batch_size=1000, device=device)
-# losses, rewards, best_expr, max_reward = learner.train()
-
-nodes_list = [Add, Sub, Mult, Div, Sin, Cos, Log, Exp, X, Y, Const]
-library = Library(nodes_list)
-expression = ExprTree(library)
-# x^3 + 5
-expression.add_node(0)
-expression.add_node(2)
-expression.add_node(2)
-expression.add_node(10)
-expression.node_list[-1].set_value(5.0)
-expression.add_node(8)
-expression.add_node(8)
-expression.add_node(0)
-expression.add_node(8)
-expression.add_node(10)
-
 target_expr = Expr(library, expression.node_list)
 print(f"Target: {target_expr}")
 dataset = Dataset(target_expr, numpoints=20, lb=0, ub=1)
-nodes_list2 = [Add, Sub, Mult, Div, Sin, Cos, Log, Exp, X, Y, Const]
-library2 = Library(nodes_list2)
-expression2 = ExprTree(library2)
-expression2.node_list = []
-expression2.stack = []
-expression2.add_node(0)
-expression2.add_node(2)
-expression2.add_node(2)
-expression2.add_node(10)
-expression2.node_list[-1].set_value(2.0)
-expression2.add_node(8)
-expression2.add_node(8)
-expression2.add_node(0)
-expression2.add_node(8)
-expression2.add_node(10)
 
-print(f"pred: {target_expr}")
-pred_expr = Expr(library2, expression2.node_list)
-print(f"pred: {pred_expr}")
-pred_expr.optimise_consts(dataset)
-print(f"pred: {pred_expr}")
+# env = SymbolicRegressionEnv(library, dataset, hidden_size)
+env = BatchEnv(library, dataset, hidden_size, batch_size=1000, device=device)
+
+learner = Learner(env, model, epochs=2000, batch_size=1000, device=device)
+losses, rewards, best_expr, max_reward = learner.train()
+
+# nodes_list = [Add, Sub, Mult, Div, Sin, Cos, Log, Exp, X, Y, Const]
+# library = Library(nodes_list)
+# expression = ExprTree(library)
+# # x^3 + 5
+# expression.add_node(0)
+# expression.add_node(2)
+# expression.add_node(2)
+# expression.add_node(10)
+# expression.node_list[-1].set_value(5.0)
+# expression.add_node(8)
+# expression.add_node(8)
+# expression.add_node(0)
+# expression.add_node(8)
+# expression.add_node(10)
+
+# target_expr = Expr(library, expression.node_list)
+# print(f"Target: {target_expr}")
+# dataset = Dataset(target_expr, numpoints=20, lb=0, ub=1)
+# nodes_list2 = [Add, Sub, Mult, Div, Sin, Cos, Log, Exp, X, Y, Const]
+# library2 = Library(nodes_list2)
+# expression2 = ExprTree(library2)
+# expression2.node_list = []
+# expression2.stack = []
+# expression2.add_node(0)
+# expression2.add_node(2)
+# expression2.add_node(2)
+# expression2.add_node(10)
+# expression2.node_list[-1].set_value(2.0)
+# expression2.add_node(8)
+# expression2.add_node(8)
+# expression2.add_node(0)
+# expression2.add_node(8)
+# expression2.add_node(10)
+
+# print(f"pred: {target_expr}")
+# pred_expr = Expr(library2, expression2.node_list)
+# print(f"pred: {pred_expr}")
+# pred_expr.optimise_consts(dataset)
+# print(f"pred: {pred_expr}")
