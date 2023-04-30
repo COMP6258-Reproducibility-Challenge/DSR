@@ -216,13 +216,14 @@ class Y(Node):
 
 
 class Const(Node):
-    def __init__(self, num_children: int = 0, value: torch.Tensor = torch.ones(1)):
+    def __init__(self, num_children: int = 0, value: torch.Tensor = torch.ones(1,requires_grad=True)):
         super().__init__(num_children)
         self.value = value
         self.trig_ancestor = False
 
     def set_value(self, value: float):
         self.value = torch.Tensor([value])
+        self.value.requires_grad = True
 
     def compute(self):
         return self.value

@@ -50,12 +50,13 @@ class Expr():
     
     def jac(self,consts,dataset):
         vals = self.set_const(consts)
-        reward = dataset.grad_reward(self).backward()
-        # Constant optimizer minimizes the objective function
+        reward = -dataset.grad_reward(self)
+        reward.backward(retain_graph=True)
+        print(reward)
         grads = []
         for const in vals:
             grads.append(const.grad.item())
-        return -reward
+        return grads
     
     def set_const(self,consts):
         vals = []
