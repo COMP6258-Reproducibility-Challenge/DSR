@@ -229,7 +229,7 @@ class Const(Node):
         return self.value
 
     def stringify(self):
-        return str(self.value)
+        return str(self.value.tolist()[0])
 
     def duplicate(self):
         return Const()
