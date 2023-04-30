@@ -52,7 +52,6 @@ class Expr():
         vals = self.set_const(consts)
         reward = -dataset.grad_reward(self)
         reward.backward(retain_graph=True)
-        print(reward)
         grads = []
         for const in vals:
             grads.append(const.grad.item())
@@ -74,10 +73,7 @@ class Expr():
             if node.__class__.__name__ == "Const":
                 count+=1
         x0 = np.ones(count)
-        print(x0)
         opt = minimize(self.func_to_optimize,x0,args=(dataset),jac=self.jac,method='L-BFGS-B',options = {"gtol" : 1e-3})
-        print(opt)
         new_const = opt["x"]
-        print(new_const)
         self.set_const(new_const)
         return
