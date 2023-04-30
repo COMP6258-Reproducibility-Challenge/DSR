@@ -221,6 +221,9 @@ class Const(Node):
         self.value = value
         self.trig_ancestor = False
 
+    def set_value(self, value: float):
+        self.value = torch.Tensor([value])
+
     def compute(self):
         return self.value
 

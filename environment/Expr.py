@@ -1,7 +1,6 @@
 from .NodeLibrary import Library
 import numpy as np
 import torch
-from .Dataset import Dataset
 from scipy.optimize import minimize
 
 
@@ -44,22 +43,29 @@ class Expr():
         return self.node_list[0].compute()
     
     def func_to_optimize(self,consts,dataset):
-        for i in range(self.node_list):
-            node = self.node_list[i]
-            if node.__class__.__name__ == "Const":
-                node.set_value(consts[i])
-        val = 1/(1 + dataset.NRMSELoss(self,self.z))
-        return val
+        self.set_const(consts)
+        reward = dataset.reward(self)
+        # Constant optimizer minimizes the objective function
+        return -reward
     
-    
-    def optimise_consts(self, dataset: Dataset):
-        consts =[]
-        values = []
+    def set_const(self,consts):
+        count = 0
         for node in self.node_list:
             if node.__class__.__name__ == "Const":
-                consts.append(node)
-                values.append(node.compute())
-        opt = minimize(self.func_to_optimize,values,args=(dataset),method='BFGS',jac=self.func_to_optimize().backwards())
-        for i in range(consts):
-            consts[i].set_value(opt[i])
+                node.set_value(consts[count])
+                count+=1
+        return 
+    
+    def optimise_consts(self, dataset):
+        count = 0
+        for node in self.node_list:
+            if node.__class__.__name__ == "Const":
+                count+=1
+        x0 = np.ones(count)
+        print(x0)
+        opt = minimize(self.func_to_optimize,x0,args=(dataset),method='L-BFGS-B',options = {"gtol" : 1e-3})
+        print(opt)
+        new_const = opt["x"]
+        print(new_const)
+        self.set_const(new_const)
         return
