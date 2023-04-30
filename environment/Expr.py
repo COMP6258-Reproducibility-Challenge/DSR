@@ -48,13 +48,24 @@ class Expr():
         # Constant optimizer minimizes the objective function
         return -reward
     
+    def jac(self,consts,dataset):
+        vals = self.set_const(consts)
+        reward = dataset.grad_reward(self).backward()
+        # Constant optimizer minimizes the objective function
+        grads = []
+        for const in vals:
+            grads.append(const.grad.item())
+        return -reward
+    
     def set_const(self,consts):
+        vals = []
         count = 0
         for node in self.node_list:
             if node.__class__.__name__ == "Const":
                 node.set_value(consts[count])
+                vals.append(node.compute())
                 count+=1
-        return 
+        return vals
     
     def optimise_consts(self, dataset):
         count = 0
@@ -63,7 +74,7 @@ class Expr():
                 count+=1
         x0 = np.ones(count)
         print(x0)
-        opt = minimize(self.func_to_optimize,x0,args=(dataset),method='L-BFGS-B',options = {"gtol" : 1e-3})
+        opt = minimize(self.func_to_optimize,x0,args=(dataset),jac=self.jac,method='L-BFGS-B',options = {"gtol" : 1e-3})
         print(opt)
         new_const = opt["x"]
         print(new_const)
