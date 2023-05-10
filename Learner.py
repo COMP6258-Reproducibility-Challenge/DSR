@@ -8,7 +8,7 @@ class Learner():
     Runs the main body of the algortithm, including model learning and generating the best expressions
     """
     def __init__(self, env, model, risk_factor=0.05, entropy_coef=0.005, epochs=2000, batch_size=1000,
-                 lr=0.0005, device=torch.device("cpu")):
+                 lr=0.0005, beta=0.25, k=10, method="rspg", device=torch.device("cpu")):
         self.env = env
         self.model = model
         self.optim = optim.Adam(model.parameters(), lr=lr)
@@ -17,9 +17,18 @@ class Learner():
         self.entropy_coef = entropy_coef
         self.epochs = epochs
         self.batch_size = batch_size
+        self.beta = beta
+        self.k = k
+        self.method = method
+
+        self.ewma = 0
+
+        # Priority Queue, first is reward, second is logprobs
+        self.pq = [torch.full((k,), -1, device=device), torch.zeros((k,), device=device)]
+
         self.device = device
 
-    def loss(self, log_probs, entropies, rewards):
+    def loss_rspg(self, log_probs, entropies, rewards):
         """
         Params
             log_probs: torch.Tensor
@@ -49,39 +58,62 @@ class Learner():
         return {"log_prob_term": g1, "entropy_term": g2, "loss": -(g1 + g2),
                 "max_reward": max_reward, "max_reward_i": max_reward_i}
 
-    def get_batch(self):
+    def loss_vpg(self, log_probs, entropies, rewards):
         """
-        Generates a batch of expressions, as well as their associated rewards, entropies, and log probabilities.
-        All these terms can then be used in the loss function.
+        Params
+            log_probs: torch.Tensor
+                Log probabilities of expressions being sampled. Shape (N,)
+            entropies: torch.Tensor
+                Entropy of generated categorical distributions for each expression. Shape (N,)
+            rewards: torch.Tensor
+                Rewards of each generated expression. Shape (N,)
+        Returns
+            A dictionary holding different loss terms and other auxilliary info
         """
-        rewards = torch.empty((self.batch_size,), device=self.device)
-        probs = torch.empty((self.batch_size,), device=self.device)
-        entropies = torch.empty((self.batch_size,), device=self.device)
-        exprs = []
+        # Filter the low performing rewards, keeping only the top quantile of expressions
+        self.ewma = self.beta * rewards.mean() + (1 - self.beta) * self.ewma
 
-        for i in range(self.batch_size):
-            running_entropy = 0
-            running_log_prob = 0
-            observation, info = self.env.reset()
-            done = False
-            while not done:
-                mask = info["mask"]
-                action, hidden, log_prob, entropy = self.model.sample_action(observation, mask)
-                running_entropy += entropy
-                running_log_prob += log_prob
-                action_dict = {"node": action.item(), "hidden_state": hidden}
-                observation, reward, done, _, info = self.env.step(action_dict)
+        g1 = ((rewards - self.ewma) * log_probs).mean()
+        g2 = self.entropy_coef * entropies.mean()
 
-            # This will be equal to the last reward generated, as an expression only gets rewarded once it is completed.
-            if torch.isnan(reward):
-                reward = 0
-            rewards[i] = reward
-            probs[i] = running_log_prob
-            entropies[i] = running_entropy
-            exprs.append(self.env.expr_tree)
+        max_reward = torch.max(rewards)
+        max_reward_i = torch.argmax(rewards)    
 
-        return rewards, entropies, probs, exprs
+        # The loss term is negative here because pytorch optimisers by default perform gradient descent, but
+        # we want to do gradient ascent on g1+g2
+        return {"log_prob_term": g1, "entropy_term": g2, "loss": -(g1 + g2),
+                "max_reward": max_reward, "max_reward_i": max_reward_i}
+    
+    def loss_pqt(self, log_probs, entropies, rewards):
+        """
+        Params
+            log_probs: torch.Tensor
+                Log probabilities of expressions being sampled. Shape (N,)
+            entropies: torch.Tensor
+                Entropy of generated categorical distributions for each expression. Shape (N,)
+            rewards: torch.Tensor
+                Rewards of each generated expression. Shape (N,)
+        Returns
+            A dictionary holding different loss terms and other auxilliary info
+        """
+        # Filter the low performing rewards, keeping only the top quantile of expressions
 
+        all_rewards = torch.cat([rewards, self.pq[0]])
+        all_log_probs = torch.cat([log_probs, self.pq[1]])
+        self.pq[0], best_i = torch.topk(all_rewards, self.k)
+        self.pq[1] = all_log_probs[best_i]
+
+        g1 = self.pq[0].mean()
+        g2 = self.entropy_coef * entropies.mean()
+
+        max_reward = torch.max(rewards)
+        max_reward_i = torch.argmax(rewards)    
+
+        # The loss term is negative here because pytorch optimisers by default perform gradient descent, but
+        # we want to do gradient ascent on g1+g2
+        return {"log_prob_term": g1, "entropy_term": g2, "loss": -(g1 + g2),
+                "max_reward": max_reward, "max_reward_i": max_reward_i}
+    
     def get_multi_batch(self):
         obs, info = self.env.reset()
         mask = info["mask"]
@@ -111,7 +143,14 @@ class Learner():
         """
         self.optim.zero_grad()
         rewards, entropies, log_probs, exprs = self.get_multi_batch()
-        loss_dict = self.loss(log_probs, entropies, rewards)
+
+        if self.method == "rspg":
+            loss_dict = self.loss_rspg(log_probs, entropies, rewards)
+        elif self.method == "vpg":
+            loss_dict = self.loss_vpg(log_probs, entropies, rewards)
+        elif self.method == "pqt":
+            loss_dict = self.loss_pqt(log_probs, entropies, rewards)
+
         loss = loss_dict["loss"]
         loss.backward()
         self.optim.step()
