@@ -106,5 +106,5 @@ dataset = Dataset(target_expr, numpoints=20, lb=0, ub=2)
 # env = SymbolicRegressionEnv(library, dataset, hidden_size)
 env = BatchEnv(library, dataset, hidden_size, batch_size=1000, device=device)
 
-learner = Learner(env, model, epochs=2000, batch_size=1000, device=device, method="pqt")
+learner = Learner(env, model, epochs=2000, batch_size=1000, device=device, method="vpg")
 losses, rewards, best_expr, max_reward = learner.train()
