@@ -42,6 +42,7 @@ class VPGLoss(Loss):
     def __init__(self, beta=0.25, entropy_coef=0.005):
         self.beta = beta
         self.entropy_coef = entropy_coef
+        self.ewma = 0
 
     def calculate(self, log_probs, entropies, rewards, exprs):
         # Filter the low performing rewards, keeping only the top quantile of expressions
@@ -64,6 +65,7 @@ class PQTLoss(Loss):
         self.pq = [torch.full((k,), -1, device=device), []]
         self.device = device
         self.entropy_coef = entropy_coef
+        self.k = k
         self.model = model
         self.library = library
 
@@ -92,33 +94,38 @@ class PQTLoss(Loss):
                 "max_reward": max_reward, "max_reward_i": max_reward_i}
 
     def calc_probs(self, exprs):
-        log_probs = torch.empty((len(exprs),), device=self.device)
-        entropies = torch.empty((len(exprs),), device=self.device)
+        log_probs = torch.empty((self.k,), device=self.device)
+        entropies = torch.empty((self.k,), device=self.device)
         # Each expr is an expression tree
         for i, expr in enumerate(exprs):
             log_prob = 0
             entropy = 0
+
             hidden_state = None
             parent = -1
             sibling = -1
             prob_dist, hidden_state = self.model.forward(parent, sibling, hidden_state)
-            mask = expr_tree.valid_nodes_mask()
 
             expr_tree = ExprTree(self.library)
+            expr_tree.node_list = []
+            mask = torch.tensor(expr_tree.valid_nodes_mask(), device=self.device)
             for node in expr.node_list:
                 j = self.library.get_node_int(node)
 
-                expr_tree.add_node(j)
-                parent = self.library.get_node_int(expr_tree.get_parent_node())
-                sibling = self.library.get_node_int(expr_tree.get_sibling_node())
-
-                prob_dist, hidden_state = self.model.forward(parent, sibling, hidden_state)
                 entropy += torch.sum(-prob_dist * torch.log(prob_dist), dim=-1)
 
                 masked_dist = prob_dist * mask
-                normalised_masked_dist = masked_dist / torch.sum(masked_dist, dim=-1).unsqueeze(1)
-
+                normalised_masked_dist = masked_dist / torch.sum(masked_dist, dim=-1)#.unsqueeze(1)
                 log_prob += torch.log(normalised_masked_dist[j])
+                
+                expr_tree.add_node(j)
+                if len(expr_tree.stack) == 0:
+                    break
+                mask = torch.tensor(expr_tree.valid_nodes_mask(), device=self.device)
+                parent = self.library.get_node_int(expr_tree.get_parent_node())
+                sibling = self.library.get_node_int(expr_tree.get_sibling_node())
+                prob_dist, hidden_state = self.model.forward(parent, sibling, hidden_state)
+                
             log_probs[i] = log_prob
             entropies[i] = entropy
         return log_probs, entropies
