@@ -81,9 +81,13 @@ class PQTLoss(Loss):
         selected_log_probs = all_log_probs[best_i]
         selected_entropies = all_entropies[best_i]
         self.pq[1] = [all_exprs[i] for i in best_i]
+        
+        not_selected = torch.ones_like(all_log_probs, dtype=torch.int)
+        not_selected[best_i] = 0
+        all_log_probs[not_selected].detach()
 
         g1 = selected_log_probs.mean()
-        g2 = self.entropy_coef * selected_entropies.mean()
+        g2 = self.entropy_coef * entropies.mean()#selected_entropies.mean()
 
         max_reward = torch.max(rewards)
         max_reward_i = torch.argmax(rewards)   
