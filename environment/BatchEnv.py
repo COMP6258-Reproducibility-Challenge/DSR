@@ -91,6 +91,14 @@ class BatchEnv():
         return batched_infos
 
     def unbatch_actions(self, action_dict):
+        """
+        Formats the action_dict so that it is not by batch and is by the actions instead
+        
+        Returns:
+            new_action_dict: dict{"node": Node, "hidden_state": (tensor(float),tensor(float))}
+                A dictionary with key "node" and value of the associated node with the associated "hidden_state" of a
+                tuple with ("hidden state","context state") (tensor(float),tensor(float))
+        """
         new_action_dict = []
         for action, h, c in zip(action_dict["node"], action_dict["hidden_state"][0], action_dict["hidden_state"][1]):
             new_single_dict = {"node": action, "hidden_state": (h,c)}
@@ -99,9 +107,23 @@ class BatchEnv():
         return new_action_dict
 
     def get_exprs(self):
+        """
+        Gets a list of the expresion trees
+        
+        Returns:
+            list[ExprTree]
+                A list of expression trees for the whole batch
+        """
         return [e.expr_tree for e in self.envs]
     
     def filter_obs(self, obs, done):
+        """
+        Removes all the completed observations
+        
+        Returns:
+            new_obs: dict{parent : list[Node], sibling : list[Node], hidden_state : list[(tensor(float),tensor(float))]}
+                The new observation that has filtered out completed observations.
+        """
         new_obs = {}
         new_obs["parent"] = obs["parent"][~done]
         new_obs["sibling"] = obs["sibling"][~done]
