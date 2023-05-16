@@ -1,125 +1,22 @@
-import torch
-
-from models import Regressor
+from Benchmarks import *
 from Learner import Learner
-from Losses import RSPGLoss, VPGLoss, PQTLoss
-from environment.SREnv import SymbolicRegressionEnv
-from environment.NodeLibrary import Library
-from environment.Dataset import Dataset
-from environment.Expr import Expr
-from environment.ExprTree import ExprTree
-from environment.nodes.Node import *
+from Losses import PQTLoss
 from environment.BatchEnv import BatchEnv
+from models import Regressor
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-nodes_list = [Add, Sub, Mult, Div, Sin, Cos, Log, Exp, X, Y, Const]
-library = Library(nodes_list)
+
+# The Benchmark class instantiates all relevant Nguyen expression
+# which return the expression, its library, and the corresponding dataset
+expression, library, dataset = Nguyen_1()
 
 embedding_size = 32
 hidden_size = 32
 model = Regressor(embedding_size, hidden_size, library.get_size(), device=device)
 
-expression = ExprTree(library)
-
-# # x^3 + 5
-# expression.add_node(0)
-# expression.add_node(2)
-# expression.add_node(2)
-# expression.add_node(2)
-# expression.add_node(10)
-# expression.node_list[-1].set_value(5.0)
-# expression.add_node(8)
-# expression.add_node(8)
-# expression.add_node(8)
-# expression.add_node(10)
-# expression.node_list[-1].set_value(5.0)
-# x^3 + x^2 + x
-expression.add_node(0)
-expression.add_node(0)
-expression.add_node(2)
-expression.add_node(2)
-expression.add_node(8)
-expression.add_node(8)
-expression.add_node(8)
-expression.add_node(2)
-expression.add_node(8)
-expression.add_node(8)
-expression.add_node(8)
-# x^4 + x^3 + x^2 + x
-# expression.add_node(0)
-# expression.add_node(0)
-# expression.add_node(0)
-# expression.add_node(2)
-# expression.add_node(2)
-# expression.add_node(2)
-# expression.add_node(8)
-# expression.add_node(8)
-# expression.add_node(8)
-# expression.add_node(8)
-# expression.add_node(2)
-# expression.add_node(2)
-# expression.add_node(8)
-# expression.add_node(8)
-# expression.add_node(8)
-# expression.add_node(2)
-# expression.add_node(8)
-# expression.add_node(8)
-# expression.add_node(8)
-# sin(x) + sin(x + x^2)
-# expression.add_node(0)
-# expression.add_node(4)
-# expression.add_node(8)
-# expression.add_node(4)
-# expression.add_node(0)
-# expression.add_node(8)
-# expression.add_node(2)
-# expression.add_node(8)
-# expression.add_node(8)
-# sin(x) + sin(y^2)
-# expression.add_node(0)
-# expression.add_node(4)
-# expression.add_node(8)
-# expression.add_node(4)
-# expression.add_node(2)
-# expression.add_node(9)
-# expression.add_node(9)
-# sqrt(x)
-# expression.add_node(7)
-# expression.add_node(2)
-# expression.add_node(3)
-# expression.add_node(8)
-# expression.add_node(0)
-# expression.add_node(8)
-# expression.add_node(8)
-# expression.add_node(6)
-# expression.add_node(8)
-# log(x+1) + log(x^2 + 1)
-# expression.add_node(0)
-# expression.add_node(6)
-# expression.add_node(0)
-# expression.add_node(8)
-# expression.add_node(3)
-# expression.add_node(8)
-# expression.add_node(8)
-# expression.add_node(6)
-# expression.add_node(0)
-# expression.add_node(2)
-# expression.add_node(8)
-# expression.add_node(8)
-# expression.add_node(3)
-# expression.add_node(8)
-# expression.add_node(8)
-
-target_expr = Expr(library, expression.node_list)
-print(f"Target: {target_expr}")
-
-dataset = Dataset(target_expr, numpoints=20, lb=-1, ub=1)
-
-# env = SymbolicRegressionEnv(library, dataset, hidden_size)
 env = BatchEnv(library, dataset, hidden_size, batch_size=1000, device=device)
 
-# loss = VPGLoss()
-# loss = RSPGLoss()
+# defining the loss - PQTLoss(), VPGLoss(), and RSPGLoss())
 loss = PQTLoss(model, library, device=device)
 
 learner = Learner(env, model, loss, epochs=2000, batch_size=1000, device=device)
