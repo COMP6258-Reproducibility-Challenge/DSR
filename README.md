@@ -34,29 +34,29 @@ To run the project, simply run `python main.py`.
 
 # Options
 To change the target expression, create a tree using the add node function e.g. for x^3 + x^2 + x + 5:
-- expression.add_node(0)
-- expression.add_node(0)
-- expression.add_node(0)
-- expression.add_node(2)
-- expression.add_node(2)
-- expression.add_node(8)
-- expression.add_node(8)
-- expression.add_node(8)
-- expression.add_node(2)
-- expression.add_node(8)
-- expression.add_node(8)
-- expression.add_node(8)
-- expression.add_node(10)
-- expression.node_list[-1].set_value(5.0)
-
+    expression.add_node(0)
+    expression.add_node(0)
+    expression.add_node(0)
+    expression.add_node(2)
+    expression.add_node(2)
+    expression.add_node(8)
+    expression.add_node(8)
+    expression.add_node(8)
+    expression.add_node(2)
+    expression.add_node(8)
+    expression.add_node(8)
+    expression.add_node(8)
+    expression.add_node(10)
+    expression.node_list[-1].set_value(5.0)
 The index of each symbol is dictated by the library which we have already created an instance of. You can also include a Y or Const.
-- nodes_list = [Add, Sub, Mult, Div, Sin, Cos, Log, Exp, X]
-- nodes_list = [Add, Sub, Mult, Div, Sin, Cos, Log, Exp, X, Y, Const]
+    nodes_list = [Add, Sub, Mult, Div, Sin, Cos, Log, Exp, X]
+    nodes_list = [Add, Sub, Mult, Div, Sin, Cos, Log, Exp, X, Y, Const]
+
 
 The dataset dictates the bounds of the expression and the number of datapoints.
-- dataset = Dataset(target_expr, numpoints=20, lb=-1, ub=1)
+    dataset = Dataset(target_expr, numpoints=20, lb=-1, ub=1)
 
 The different policy gradients are dictated by the loss function being used which has each loss function commented out:
-- loss = VPGLoss()
-- loss = RSPGLoss()
-- loss = PQTLoss(model, library, device=device)
+    loss = VPGLoss()
+    loss = RSPGLoss()
+    loss = PQTLoss(model, library, device=device)
