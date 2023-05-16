@@ -1,6 +1,7 @@
 from .NodeLibrary import Library
 import numpy as np
 import torch
+from scipy.optimize import minimize
 
 
 
@@ -45,3 +46,39 @@ class Expr():
                 node.set_value(y)
         return self.node_list[0].compute()
     
+    def func_to_optimize(self,consts,dataset):
+        self.set_const(consts)
+        reward = dataset.reward(self)
+        # Constant optimizer minimizes the objective function
+        return -reward
+    
+    def jac(self,consts,dataset):
+        vals = self.set_const(consts)
+        reward = -dataset.grad_reward(self)
+        reward.backward(retain_graph=True)
+        grads = []
+        for const in vals:
+            grads.append(const.grad.item())
+        return grads
+    
+    def set_const(self,consts):
+        vals = []
+        count = 0
+        for node in self.node_list:
+            if node.__class__.__name__ == "Const":
+                node.set_value(consts[count])
+                vals.append(node.compute())
+                count+=1
+        return vals
+    
+    def optimise_consts(self, dataset):
+        count = 0
+        for node in self.node_list:
+            if node.__class__.__name__ == "Const":
+                count+=1
+        x0 = np.ones(count)
+        if count != 0 :
+            opt = minimize(self.func_to_optimize,x0,args=(dataset),jac=self.jac,method='L-BFGS-B',options = {"gtol" : 1e-3})
+            new_const = opt["x"]
+            self.set_const(new_const)
+        return

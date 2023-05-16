@@ -17,7 +17,6 @@ class Dataset():
         self.z = target_expr.expr_func(self.X, self.Y)
         self.normalising_const = torch.std(self.z)
 
-    @torch.no_grad()
     def NRMSELoss(self, yhat, y):
         return (1/self.normalising_const) * torch.sqrt(torch.mean((yhat-y)**2))
 
@@ -36,3 +35,16 @@ class Dataset():
 
         return 1/(1 + self.NRMSELoss(yhat, self.z))
 
+    def grad_reward(self, expr: Expr):
+        """
+        Params:
+            expr: Expr
+                The expression to test
+
+        Returns:
+            float which is the squashed nrmse (reward) of the proposed expression on the dataset which has gradients enabled
+        """
+
+        yhat = expr.expr_func(self.X, self.Y)
+
+        return 1/(1 + self.NRMSELoss(yhat, self.z))
