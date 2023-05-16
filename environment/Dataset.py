@@ -5,11 +5,13 @@ import torch
 from .NodeLibrary import Library
 from .nodes import Node
 
+
+
 class Dataset():
+    """
+    Defines the dataset that is used to calcuate the reward for the model.
+    """
     def __init__(self, target_expr: Expr, numpoints=100, lb=-1, ub=1):
-        # Or np.uniform? Whatever the paper says
-        # self.X = torch.linspace(-1, 1, numpoints)
-        # self.Y = torch.linspace(-1, 1, numpoints)
         self.X = torch.distributions.Uniform(low=lb, high=ub).sample((numpoints,))
         self.Y = torch.distributions.Uniform(low=lb, high=ub).sample((numpoints,))
         self.z = target_expr.expr_func(self.X, self.Y)

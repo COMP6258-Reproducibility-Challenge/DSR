@@ -6,7 +6,7 @@ class Library():
     """
     def __init__(self, nodes):
         """
-        Params
+        Params:
             nodes: list[Node]
                 The list of available nodes in the library
         """
@@ -17,9 +17,25 @@ class Library():
         return len(self.nodes)
     
     def get_node(self, node_index: int):
+        """
+        Params:
+            node_index: int
+                Index of the node to be returned
+
+        Returns:
+            The node based on the index
+        """
         return self.nodes[node_index]()
 
     def get_node_int(self, node: Node):
+        """
+        Params
+            node: Node
+                Node of which index to be returned
+
+        Returns:
+            The index of the node
+        """
         for i, name in enumerate(self.names):
             if node.__class__.__name__ == name:
                 return i

@@ -1,11 +1,15 @@
 from .Expr import Expr
 from .NodeLibrary import Library
 
-class ExprTree():
 
+
+class ExprTree():
+    """
+    Defines the expression as a tree to allow building up the expression by adding nodes
+    """
     def __init__(self, library: Library, node_list=[]):
         """
-        Params
+        Params:
             library: Library
                 Library of available nodes
             node_list: list[Node]
@@ -22,11 +26,19 @@ class ExprTree():
         return Expr(self.library, self.node_list)
 
     def get_parent_node(self):
+        """
+        Returns:
+            The parent of the node to be added
+        """
         if len(self.stack) != 0:
             return self.stack[-1]  
         return None
 
     def get_sibling_node(self):
+        """
+        Returns:
+            The sibling of the node to be added
+        """
         if len(self.stack) == 0:
             return None
         parent = self.stack[-1]
@@ -38,7 +50,7 @@ class ExprTree():
         """
         Adds node to the tree.
 
-        Params
+        Params:
             node_index: int
                 The index of the node in the library
         """
@@ -60,7 +72,7 @@ class ExprTree():
         """
         Returns a mask (list of boolean values) of the same shape as the library where a True reflects that 
         the corresponding node is valid and could be added next, and a False reflects that that node is an invalid
-        addition. This will be needed to zero out the output probabilities of invalid nodes.
+        addition.
         """
         mask = [True for _ in range(self.library.get_size())]
         if len(self.node_list) == 0:
