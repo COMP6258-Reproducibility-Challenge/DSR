@@ -35,15 +35,19 @@ class SymbolicRegressionEnv(gym.Env):
 
     def _get_obs(self):
         """
-        Returns the current state of the environment (should be an element of the observation space). This includes the 
-        parent and sibling of the current node, and the hidden state produced by the RNN in the previous step
+        Returns the current state of the environment. This includes the parent and sibling of the current node, 
+        and the hidden state produced by the RNN in the previous step
         """
         return self.obs
 
     def _get_info(self):
         """
-        Returns auxillary information dictionary about the environment/last step produced
-        (i.e. current tree size maybe? idk we'll see)
+        Returns the mask for constraining the search space
+        
+        Returns:
+            mask: dict{mask : list[bool]}
+                A dictionary with a key "mask", value of list of booleans. The list of booleans is the same length as 
+                the library and the booleans represent whether the corresponding node from the library is valid in the next step 
         """
         if not self._is_terminated():
             return {"mask": self.expr_tree.valid_nodes_mask()}
@@ -68,12 +72,10 @@ class SymbolicRegressionEnv(gym.Env):
         """
         Resets the environment (gets called at the end of every episode)
         """
-        # Reset relevant properties here
-        #
+
 
         self.expr_tree = ExprTree(self.library)
         self.expr_tree.node_list = []
-        # print(self.expr_tree.node_list)
         self.action = None
         self.obs = {'parent' : -1, 'sibling' : -1, 'hidden_state' : (torch.zeros(self.hidden_shape, device=self.device),
                                                                      torch.zeros(self.hidden_shape,device=self.device))}
@@ -88,8 +90,6 @@ class SymbolicRegressionEnv(gym.Env):
         Params:
             action: dictionary including next node to add and hidden state produced
         """
-        # Compute new environment after action has been applied here
-        #
 
         #update the observation
         self.action = action
@@ -104,6 +104,9 @@ class SymbolicRegressionEnv(gym.Env):
         return (observation, reward, terminated, False, info)
 
     def update_obs(self):
+        """
+        Updates the observation based on the action that has been taken by the model
+        """
         parent = self.library.get_node_int(self.expr_tree.get_parent_node())
         sibling = self.library.get_node_int(self.expr_tree.get_sibling_node())
 

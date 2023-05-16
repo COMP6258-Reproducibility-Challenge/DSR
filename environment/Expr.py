@@ -3,11 +3,14 @@ import numpy as np
 import torch
 
 
-class Expr():
 
+class Expr():
+    """
+    Defines the expression to allow string representation and calculating the output
+    """
     def __init__(self, library: Library, node_list=[]):
         """
-        Params
+        Params:
             library: Library
                 Library of available nodes
             node_list: list[Node]
@@ -18,7 +21,7 @@ class Expr():
 
     def __call__(self, X: np.ndarray):
         """
-        Params
+        Params:
             X: np.ndarray
                 An n-dimensional numpy vector 
 
@@ -29,7 +32,8 @@ class Expr():
 
     def __repr__(self):
         """
-        Returns string representation of expression
+        Returns: 
+            The string representation of expression
         """
         return self.node_list[0].stringify()
 
