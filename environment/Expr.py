@@ -47,12 +47,24 @@ class Expr():
         return self.node_list[0].compute()
     
     def func_to_optimize(self,consts,dataset):
+        """
+        Params:
+            consts: list[float]
+            
+            dataset: Dataset
+
+        Returns:
+            float of the reward
+        """
         self.set_const(consts)
         reward = dataset.reward(self)
         # Constant optimizer minimizes the objective function
         return -reward
     
     def jac(self,consts,dataset):
+        """
+        Returns the jacobian of the expression
+        """
         vals = self.set_const(consts)
         reward = -dataset.grad_reward(self)
         reward.backward(retain_graph=True)
@@ -62,6 +74,17 @@ class Expr():
         return grads
     
     def set_const(self,consts):
+        """
+        Sets the constants to corresponding values
+
+        Params:
+            consts: list[float]
+
+        Returns:
+            vals: list[torch.Tensor(1)]
+                The list of tensors containing the constant values with grad enabled
+
+        """
         vals = []
         count = 0
         for node in self.node_list:
@@ -72,6 +95,9 @@ class Expr():
         return vals
     
     def optimise_consts(self, dataset):
+        """
+        Optimised constants using the Broyden-Fletcher-Goldfarb-Shanno algorithm (L-BFGS)
+        """
         count = 0
         for node in self.node_list:
             if node.__class__.__name__ == "Const":

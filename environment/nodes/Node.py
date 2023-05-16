@@ -11,21 +11,35 @@ class Node(ABC):
     def __init__(self, num_children):
         # num_children should be either 0,1,2
         self.num_children = num_children
-        self.trig_ancestor = None
+        self.trig_ancestor = False
         # children are just a list of nodes (which may be empty if num_children == 0)
         self.children = []
 
     def add_child(self, child):
+        """
+        Params:
+            child: Node
+                The node to add as a child
+        """
         if self.remaining_children() > 0:
             self.children.append(child)
 
     def remaining_children(self):
+        """
+        Returns the number of remaining empty spaces for children
+        """
         return self.num_children-len(self.children)
 
     def has_trig_ancestor(self):
+        """
+        Returns a boolean that indicates whether the node has a trigonometric node as an ancestor
+        """
         return self.trig_ancestor
 
     def add_trig_ancestor(self):
+        """
+        Flags the node as having a trigonometric ancestor 
+        """
         self.trig_ancestor = True
 
     @abstractmethod

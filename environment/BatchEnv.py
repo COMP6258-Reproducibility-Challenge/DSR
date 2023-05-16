@@ -5,6 +5,9 @@ import torch
 from .SREnv import SymbolicRegressionEnv
 
 class BatchEnv():
+    """
+    Defines a batch of environments to be used for batch learning
+    """
     def __init__(self, library, dataset, hidden_size, batch_size=1000, device=torch.device("cpu")):
         self.envs = [SymbolicRegressionEnv(library, dataset, hidden_size, device=device) for _ in range(batch_size)]
         self.dones = torch.full((batch_size,), False, device=device)
