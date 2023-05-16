@@ -62,7 +62,10 @@ class SymbolicRegressionEnv(gym.Env):
         """
         Calculate reward based on current (assume finished) equation
         """
-        return self.dataset.reward(Expr(self.library, self.expr_tree.node_list))
+        
+        expr = Expr(self.library, self.expr_tree.node_list)
+        expr.optimise_consts(self.dataset)
+        return self.dataset.reward(expr)
 
     def reset(self):
         """

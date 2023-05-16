@@ -1,4 +1,3 @@
-# import matplotlib.pyplot as plt
 import torch
 
 from models import Regressor
@@ -13,8 +12,7 @@ from environment.nodes.Node import *
 from environment.BatchEnv import BatchEnv
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-nodes_list = [Add, Sub, Mult, Div, Sin, Cos, Log, Exp, X]#, Y]#, Const]
+nodes_list = [Add, Sub, Mult, Div, Sin, Cos, Log, Exp, X, Y, Const]
 library = Library(nodes_list)
 
 embedding_size = 32
@@ -22,6 +20,19 @@ hidden_size = 32
 model = Regressor(embedding_size, hidden_size, library.get_size(), device=device)
 
 expression = ExprTree(library)
+
+# # x^3 + 5
+# expression.add_node(0)
+# expression.add_node(2)
+# expression.add_node(2)
+# expression.add_node(2)
+# expression.add_node(10)
+# expression.node_list[-1].set_value(5.0)
+# expression.add_node(8)
+# expression.add_node(8)
+# expression.add_node(8)
+# expression.add_node(10)
+# expression.node_list[-1].set_value(5.0)
 # x^3 + x^2 + x
 expression.add_node(0)
 expression.add_node(0)
@@ -99,9 +110,9 @@ expression.add_node(8)
 # expression.add_node(8)
 # expression.add_node(8)
 
-
 target_expr = Expr(library, expression.node_list)
 print(f"Target: {target_expr}")
+
 dataset = Dataset(target_expr, numpoints=20, lb=-1, ub=1)
 
 # env = SymbolicRegressionEnv(library, dataset, hidden_size)
