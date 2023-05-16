@@ -58,10 +58,12 @@ nodes_list = [Add, Sub, Mult, Div, Sin, Cos, Log, Exp, X, Y, Const]
 
 
 The dataset dictates the bounds of the expression and the number of datapoints.
-```dataset = Dataset(target_expr, numpoints=20, lb=-1, ub=1)```
+```
+dataset = Dataset(target_expr, numpoints=20, lb=-1, ub=1)
+```
 
 The different policy gradients are dictated by the loss function being used which has each loss function commented out:
-``
+```
 loss = VPGLoss()
 loss = RSPGLoss()
 loss = PQTLoss(model, library, device=device)
