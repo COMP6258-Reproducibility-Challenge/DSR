@@ -1,6 +1,6 @@
 from Benchmarks import *
 from Learner import Learner
-from Losses import PQTLoss
+from Losses import *
 from environment.BatchEnv import BatchEnv
 from models import Regressor
 
@@ -16,8 +16,8 @@ model = Regressor(embedding_size, hidden_size, library.get_size(), device=device
 
 env = BatchEnv(library, dataset, hidden_size, batch_size=1000, device=device)
 
-# defining the loss - PQTLoss(), VPGLoss(), and RSPGLoss())
-loss = PQTLoss(model, library, device=device)
+# defining the loss - PQTLoss(model, library, device), VPGLoss(), and RSPGLoss())
+loss = RSPGLoss()
 
 learner = Learner(env, model, loss, epochs=2000, batch_size=1000, device=device)
 losses, rewards, best_expr, max_reward = learner.train()
