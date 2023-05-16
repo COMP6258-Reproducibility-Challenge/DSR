@@ -16,6 +16,9 @@ class BatchEnv():
         self.device = device
 
     def reset(self):
+        """
+        Resets the all the environments of the batch (gets called at the end of every episode)
+        """
         self.dones = torch.full((self.batch_size,), False, device=self.device)
         self.rewards = torch.empty((self.batch_size, ), device=self.device)
         observations = []

@@ -91,7 +91,7 @@ class SymbolicRegressionEnv(gym.Env):
         """
         Computes the environment after the model has taken an action
         Params:
-            action: dictionary including next node to add and hidden state produced
+            action: tuple including the observation, reward, boolean indicating termination and the mask
         """
 
         #update the observation
