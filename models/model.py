@@ -20,6 +20,8 @@ class Regressor(nn.Module):
                 The size of the hidden activations
             output_size: int
                 The number of possible nodes to output
+            device: torch.device
+                Device that is running the program
 
         """
         super().__init__()
@@ -38,6 +40,10 @@ class Regressor(nn.Module):
         Params
             x: int | tensor
                 The indices of the parent and sibling nodes
+            parent: Node
+                The parent Node
+            sibling: Node
+                The sibling Node
             hidden_state: torch.tensor
                 The hidden state the model outputted the previous timestep
         
@@ -47,11 +53,6 @@ class Regressor(nn.Module):
         parent_emb = self.embedding[parent]
         parent_emb[parent == -1] = 0
         
-        #parent_emb = torch.where(parent != -1, self.embedding[parent], torch.zeros_like(self.embedding[parent]))
-        
-        # parent_emb = self.embedding[parent] if parent is not None else torch.zeros((self.embedding_size, ))
-        # sibling_emb = self.embedding[sibling] if sibling is not None else torch.zeros((self.embedding_size, ))
-        # sibling_emb = torch.where(parent != -1, self.embedding[sibling], torch.zeros_like(self.embedding[sibling]))
         sibling_emb = self.embedding[sibling]
         sibling_emb[sibling == -1] = 0
 
@@ -85,15 +86,9 @@ class Regressor(nn.Module):
 
         masked_dist = action_dist * mask
         normalised_masked_dist = masked_dist / torch.sum(masked_dist, dim=-1).unsqueeze(1)
-        # Use mask to zero out probabilities here
-        # those are of the invalid nodes
-        # action_dist *= torch.as_tensor(mask).reshape(action_dist.shape)
-        # action_dist /= action_dist.sum()
         dist = Categorical(normalised_masked_dist)
         action = dist.sample()
         
-        # while not mask[action]:
-        #     action = dist.sample()    
         log_prob = dist.log_prob(action)
 
         return action, next_hidden_state, log_prob, entropy
