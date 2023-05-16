@@ -30,6 +30,11 @@ class BatchEnv():
         return self.get_batch_obs(observations), self.get_batch_info(infos)
     
     def step(self, actions):
+        """
+        Computes the environment after the model has taken actions
+        Params:
+            actions: list of dictionaries including next node to add and hidden state produced 
+        """
         observations = []
         infos = []
         indices = [i for i,done in enumerate(self.dones) if not done]
@@ -48,6 +53,10 @@ class BatchEnv():
         return self.get_batch_obs(observations), self.rewards, self.dones, self.get_batch_info(infos)
 
     def get_batch_obs(self, observations):
+        """
+        Returns the current states of the environments. This includes the parents and siblings of the current nodes, 
+        and the hidden states produced by the RNN in the previous step
+        """
         batched_obs = {"parent": [], "sibling": [], "hidden_state": []}
         if len(observations) == 0:
             return batched_obs
@@ -65,6 +74,14 @@ class BatchEnv():
         return batched_obs
 
     def get_batch_info(self, infos):
+        """
+        Returns the masks for constraining the search space
+        
+        Returns:
+            mask: dict{mask : list[list[bool]]}
+                A dictionary with key "mask" and value of a list of masks. A mask is a list of booleans of the same length as the library
+                The booleans represent whether the corresponding node from the library is valid in the next step
+        """
         batched_infos = {"mask": []}
         for info in infos:
             batched_infos["mask"].append(info["mask"])

@@ -46,8 +46,8 @@ class SymbolicRegressionEnv(gym.Env):
         
         Returns:
             mask: dict{mask : list[bool]}
-                A dictionary with a key "mask", value of list of booleans. The list of booleans is the same length as 
-                the library and the booleans represent whether the corresponding node from the library is valid in the next step 
+                A dictionary with key "mask" and value of a mask. A mask is a list of booleans of the same length as the library
+                The booleans represent whether the corresponding node from the library is valid in the next step
         """
         if not self._is_terminated():
             return {"mask": self.expr_tree.valid_nodes_mask()}
@@ -91,7 +91,7 @@ class SymbolicRegressionEnv(gym.Env):
         """
         Computes the environment after the model has taken an action
         Params:
-            action: tuple including the observation, reward, boolean indicating termination and the mask
+            action: dictionary including next node to add and hidden state produced 
         """
 
         #update the observation
