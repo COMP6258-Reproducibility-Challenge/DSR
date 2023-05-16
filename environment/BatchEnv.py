@@ -78,7 +78,7 @@ class BatchEnv():
         Returns the masks for constraining the search space
         
         Returns:
-            mask: dict{mask : list[list[bool]]}
+            mask: {mask : list[list[bool]]}
                 A dictionary with key "mask" and value of a list of masks. A mask is a list of booleans of the same length as the library
                 The booleans represent whether the corresponding node from the library is valid in the next step
         """

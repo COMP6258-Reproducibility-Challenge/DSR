@@ -45,7 +45,7 @@ class SymbolicRegressionEnv(gym.Env):
         Returns the mask for constraining the search space
         
         Returns:
-            mask: dict{mask : list[bool]}
+            mask: {mask : list[bool]}
                 A dictionary with key "mask" and value of a mask. A mask is a list of booleans of the same length as the library
                 The booleans represent whether the corresponding node from the library is valid in the next step
         """
@@ -91,7 +91,10 @@ class SymbolicRegressionEnv(gym.Env):
         """
         Computes the environment after the model has taken an action
         Params:
-            action: dictionary including next node to add and hidden state produced 
+            action: dictionary including next node to add and hidden state produced
+
+        Return:
+            ({'parent' : Node, 'sibling' : Node, 'hidden_state' : (tensor(float),tensor(float))}, float, bool, bool, {mask : list[bool]})
         """
 
         #update the observation
